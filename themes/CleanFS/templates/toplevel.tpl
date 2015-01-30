@@ -46,6 +46,7 @@ foreach ($projects as $project): ?>
     <?php endif; ?>
 
   </tr>
+  <?php if (false): ?>
   <?php if (!$user->isAnon()): ?>
   <tr>
     <th><?php echo Filters::noXSS(L('activity')); ?></th>
@@ -62,6 +63,7 @@ foreach ($projects as $project): ?>
     <th><?php echo Filters::noXSS(L('activity')); ?></th>
     <td><img src="<?php echo Filters::noXSS($_SERVER['SCRIPT_NAME']); ?>?line=0066CC&amp;do=activity&amp;project_id=<?php echo Filters::noXSS($project['project_id']); ?>"/></td>
   </tr>
+  <?php endif; ?>
   <?php endif; ?>
   <tr>
     <th><?php echo Filters::noXSS(L('stats')); ?></th>
