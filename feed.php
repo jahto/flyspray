@@ -40,7 +40,7 @@ switch (Req::val('topic')) {
     break;
 }
 
-$filename = md5(sprintf('%s-%s-%d-%d', $feed_type, $orderby, $proj->id, $max_items) . $conf['general']['cookiesalt']);
+$filename = md5(sprintf('%s-%s-%d-%d', $feed_type, $orderby, $proj->id, $max_items) . $fsconf['general']['cookiesalt']);
 $cachefile = sprintf('%s/%s', FS_CACHE_DIR, $filename);
 
 // Get the time when a task has been changed last

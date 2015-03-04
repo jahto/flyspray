@@ -155,12 +155,12 @@ class User
 
     public function check_account_ok()
     {
-        global $conf, $baseurl;
+        global $fsconf, $baseurl;
         // Anon users are always OK
         if ($this->isAnon()) {
             return;
         }
-        $saltedpass = crypt($this->infos['user_pass'], $conf['general']['cookiesalt']);
+        $saltedpass = crypt($this->infos['user_pass'], $fsconf['general']['cookiesalt']);
 
         if (Cookie::val('flyspray_passhash') !== $saltedpass || !$this->infos['account_enabled']
                 || !$this->perms('group_open', 0))

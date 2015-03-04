@@ -345,7 +345,7 @@ abstract class Backend
      */
     public static function upload_files($task_id, $comment_id = 0, $source = 'userfile')
     {
-        global $db, $notify, $conf, $user;
+        global $db, $notify, $fsconf, $user;
 
         $task = Flyspray::GetTaskDetails($task_id);
 
@@ -382,8 +382,8 @@ abstract class Backend
             // Use a different MIME type
             $fileparts = explode( '.', $_FILES[$source]['name'][$key]);
             $extension = end($fileparts);
-            if (isset($conf['attachments'][$extension])) {
-                $_FILES[$source]['type'][$key] = $conf['attachments'][$extension];
+            if (isset($fsconf['attachments'][$extension])) {
+                $_FILES[$source]['type'][$key] = $fsconf['attachments'][$extension];
             //actually, try really hard to get the real filetype, not what the browser reports.
             } elseif($type = Flyspray::check_mime_type($path)) {
              $_FILES[$source]['type'][$key] = $type;
@@ -1138,7 +1138,7 @@ abstract class Backend
      */
     public static function get_task_list($args, $visible, $offset = 0, $perpage = 20)
     {
-        global $proj, $db, $user, $conf;
+        global $proj, $db, $user, $fsconf;
         /* build SQL statement {{{ */
         // Original SQL courtesy of Lance Conry http://www.rhinosw.com/
         $where  = $sql_params = array();
@@ -1388,7 +1388,7 @@ abstract class Backend
         $where = (count($where)) ? 'WHERE '. join(' AND ', $where) : '';
 
         // Get the column names of table tasks for the group by statement
-        if (!strcasecmp($conf['database']['dbtype'], 'pgsql')) {
+        if (!strcasecmp($fsconf['database']['dbtype'], 'pgsql')) {
              $groupby .= "p.project_title, p.project_is_active, lst.status_name, lt.tasktype_name,{$order_column[0]},{$order_column[1]}, lr.resolution_name, ";
              $groupby .= $db->GetColumnNames('{tasks}', 't.task_id', 't.');
         } else {

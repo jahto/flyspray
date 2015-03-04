@@ -547,7 +547,7 @@ function tpl_checkbox($name, $checked = false, $id = null, $value = 1, $attr = n
     return ($attr ? $html. join_attrs($attr) : $html) . '/>';
 } // }}}
 // {{{ Image display
-function tpl_img($src, $alt = '')
+function fs_tpl_img($src, $alt = '')
 {
     global $baseurl;
     if (is_file(BASEDIR .'/'.$src)) {
@@ -557,9 +557,9 @@ function tpl_img($src, $alt = '')
 } // }}}
 // {{{ Text formatting
 //format has been already checked in constants.inc.php
-if(isset($conf['general']['syntax_plugin'])) {
+if(isset($fsconf['general']['syntax_plugin'])) {
 
-    $path_to_plugin = BASEDIR . '/plugins/' . $conf['general']['syntax_plugin'] . '/' . $conf['general']['syntax_plugin'] . '_formattext.inc.php';
+    $path_to_plugin = BASEDIR . '/plugins/' . $fsconf['general']['syntax_plugin'] . '/' . $fsconf['general']['syntax_plugin'] . '_formattext.inc.php';
 
     if (is_readable($path_to_plugin)) {
         include($path_to_plugin);
@@ -570,9 +570,9 @@ class TextFormatter
 {
     public static function get_javascript()
     {
-        global $conf;
+        global $fsconf;
 
-        $path_to_plugin = sprintf('%s/plugins/%s', BASEDIR, $conf['general']['syntax_plugin']);
+        $path_to_plugin = sprintf('%s/plugins/%s', BASEDIR, $fsconf['general']['syntax_plugin']);
          $return = array();
 
         if (!is_readable($path_to_plugin)) {
@@ -582,7 +582,7 @@ class TextFormatter
         $d = dir($path_to_plugin);
         while (false !== ($entry = $d->read())) {
            if (substr($entry, -3) == '.js') {
-                $return[] = $conf['general']['syntax_plugin'] . '/' . $entry;
+                $return[] = $fsconf['general']['syntax_plugin'] . '/' . $entry;
             }
         }
 
@@ -591,13 +591,13 @@ class TextFormatter
 
     public static function render($text, $type = null, $id = null, $instructions = null)
     {
-        global $conf;
+        global $fsconf;
 
-        $methods = get_class_methods($conf['general']['syntax_plugin'] . '_TextFormatter');
+        $methods = get_class_methods($fsconf['general']['syntax_plugin'] . '_TextFormatter');
         $methods = is_array($methods) ? $methods : array();
 
         if (in_array('render', $methods)) {
-            return call_user_func(array($conf['general']['syntax_plugin'] . '_TextFormatter', 'render'),
+            return call_user_func(array($fsconf['general']['syntax_plugin'] . '_TextFormatter', 'render'),
                                   $text, $type, $id, $instructions);
         } else {
             //TODO: Remove Redundant Code once tested completely
@@ -613,10 +613,10 @@ class TextFormatter
 
     public static function textarea($name, $rows, $cols, $attrs = null, $content = null)
     {
-        global $conf;
+        global $fsconf;
 
-        if (@in_array('textarea', get_class_methods($conf['general']['syntax_plugin'] . '_TextFormatter'))) {
-            return call_user_func(array($conf['general']['syntax_plugin'] . '_TextFormatter', 'textarea'),
+        if (@in_array('textarea', get_class_methods($fsconf['general']['syntax_plugin'] . '_TextFormatter'))) {
+            return call_user_func(array($fsconf['general']['syntax_plugin'] . '_TextFormatter', 'textarea'),
                                   $name, $rows, $cols, $attrs, $content);
         }
 
@@ -642,7 +642,7 @@ class TextFormatter
 // Format Date {{{
 function formatDate($timestamp, $extended = false, $default = '')
 {
-    global $db, $conf, $user, $fs;
+    global $db, $fsconf, $user, $fs;
 
     setlocale(LC_ALL, str_replace('-', '_', L('locale')) . '.utf8');
 
@@ -705,35 +705,6 @@ function tpl_draw_perms($perms)
     return $html . '</tbody></table>';
 } // }}}
 
-/**
- * Highlights searchqueries in HTML code
- *
- * @author Andreas Gohr <andi@splitbrain.org>
- * @author Harry Fuecks <hfuecks@gmail.com>
- */
-function html_hilight($html,$query){
-  //split at common delimiters
-  $queries = preg_split ('/[\s\'"\\\\`()\]\[?:!\.{};,#+*<>]+/',$query,-1,PREG_SPLIT_NO_EMPTY);
-  foreach ($queries as $q){
-     $q = preg_quote($q,'/');
-     $html = preg_replace_callback("/((<[^>]*)|$q)/i",'html_hilight_callback',$html);
-  }
-  return $html;
-}
-
-/**
- * Callback used by html_hilight()
- *
- * @author Harry Fuecks <hfuecks@gmail.com>
- */
-function html_hilight_callback($m) {
-  $hlight = unslash($m[0]);
-  if ( !isset($m[2])) {
-    $hlight = '<span class="search_hit">'.$hlight.'</span>';
-  }
-  return $hlight;
-}
-
 function tpl_disableif ($if)
 {
     if ($if) {
@@ -745,12 +716,12 @@ function tpl_disableif ($if)
 // Create an URL bas ed upon address-rewriting preferences {{{
 function CreateURL($type, $arg1 = null, $arg2 = null, $arg3 = array())
 {
-    global $baseurl, $conf;
+    global $baseurl, $fsconf;
 
     $url = $baseurl;
 
     // If we do want address rewriting
-    if ($conf['general']['address_rewriting'] == '1') {
+    if ($fsconf['general']['address_rewriting'] == '1') {
         switch ($type) {
             case 'depends':   $return = $url . 'task/' .  $arg1 . '/' . $type; break;
             case 'details':   $return = $url . 'task/' . $arg1; break;

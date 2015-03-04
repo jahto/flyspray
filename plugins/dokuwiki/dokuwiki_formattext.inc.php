@@ -1,12 +1,14 @@
 <?php
+require_once(BASEDIR . '/plugins/dokuwiki/inc/init.php');
+        
 class dokuwiki_TextFormatter
 {    
     static function render($text, $type = null, $id = null, $instructions = null)
     {
-        global $conf, $baseurl, $db;
+        global $fsconf, $baseurl, $db;
         
         // Unfortunately dokuwiki also uses $conf
-        $fs_conf = $conf;
+        $fs_conf = $fsconf;
         $conf = array();
 
         // Dokuwiki generates some notices
@@ -55,9 +57,9 @@ class dokuwiki_TextFormatter
         $Renderer->interwiki = getInterwiki();
 
         $conf = $fs_conf;
-        $conf['cachedir'] = FS_CACHE_DIR; // for dokuwiki
-        $conf['fperm'] = 0600;
-        $conf['dperm'] = 0700;
+        $fsconf['cachedir'] = FS_CACHE_DIR; // for dokuwiki
+        $fsconf['fperm'] = 0600;
+        $fsconf['dperm'] = 0700;
         
         // Loop through the instructions
         foreach ($instructions as $instruction) {
@@ -104,7 +106,7 @@ class dokuwiki_TextFormatter
 	 * @param string $textareaId
 	 */
 	static function getDokuWikiToolbar( $textareaId ) {
-		global $conf, $baseurl;
+		global $fsconf, $baseurl;
 	
 		return '<a tabindex="-1" href="javascript:void(0);" onclick="surroundText(\'**\', \'**\', \''.$textareaId.'\'); return false;">
 		  		<img src="'.$baseurl.'plugins/dokuwiki/img/format-text-bold.png" align="bottom" alt="Bold" title="Bold" border="0" /></a>

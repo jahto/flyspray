@@ -15,7 +15,7 @@ require 'vendor/autoload.php';
 setlocale(LC_ALL, str_replace('-', '_', L('locale')) . '.utf8');
 
 // If it is empty, take the user to the setup page
-if (!$conf) {
+if (!$fsconf) {
     Flyspray::Redirect('setup/index.php');
 }
 
@@ -29,7 +29,7 @@ else if (isset($_REQUEST["taskid"]))  $_REQUEST["task_id"] = $_REQUEST["taskid"]
 
 
 $db = new Database();
-$db->dbOpenFast($conf['database']);
+$db->dbOpenFast($fsconf['database']);
 $fs = new Flyspray();
 
 // If version number of database and files do not match, run upgrader

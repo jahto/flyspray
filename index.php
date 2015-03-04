@@ -95,7 +95,7 @@ header('Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0');
 header('Content-Style-Type: text/css');
 header('Content-type: text/html; charset=utf-8');
 
-if ($conf['general']['output_buffering'] == 'gzip' && extension_loaded('zlib'))
+if ($fsconf['general']['output_buffering'] == 'gzip' && extension_loaded('zlib'))
 {
     // Start Output Buffering and gzip encoding if setting is present.
     ob_start('ob_gzhandler');

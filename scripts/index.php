@@ -185,7 +185,7 @@ function tpl_draw_cell($task, $colname, $format = "<td class='%s'>%s</td>") {
             break;
 
         case 'progress':
-            $value = tpl_img($page->get_image('percent-' . $task['percent_complete'], false),
+            $value = fs_tpl_img($page->get_image('percent-' . $task['percent_complete'], false),
                     $task['percent_complete'] . '%');
             break;
 
@@ -396,7 +396,7 @@ if (Get::val('toggleadvanced')) {
 // Update check {{{
 if(Get::has('hideupdatemsg')) {
     unset($_SESSION['latest_version']);
-} else if ($conf['general']['update_check'] && $user->perms('is_admin')
+} else if ($fsconf['general']['update_check'] && $user->perms('is_admin')
            && $fs->prefs['last_update_check'] < time()-60*60*24*3) {
     if (!isset($_SESSION['latest_version'])) {
         $latest = Flyspray::remote_request('http://flyspray.org/version.txt', GET_CONTENTS);

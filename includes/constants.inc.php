@@ -9,12 +9,12 @@
 define('BASEDIR', dirname(dirname(__FILE__)));
 
 // Change this line if you move flyspray.conf.php elsewhere
-$conf = @parse_ini_file(Flyspray::get_config_path(), true);
+$fsconf = @parse_ini_file(Flyspray::get_config_path(), true);
 
 // $baseurl
 // htmlspecialchars because PHP_SELF is user submitted data, and can be used as an XSS vector.
-if (isset($conf['general']['force_baseurl']) && $conf['general']['force_baseurl'] != '') {
-    $baseurl = $conf['general']['force_baseurl'];
+if (isset($fsconf['general']['force_baseurl']) && $fsconf['general']['force_baseurl'] != '') {
+    $baseurl = $fsconf['general']['force_baseurl'];
 } else {
     if (!isset($webdir)) {
         $webdir = dirname(htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'utf-8'));
@@ -29,9 +29,9 @@ if (isset($conf['general']['force_baseurl']) && $conf['general']['force_baseurl'
     $baseurl = rtrim(Flyspray::absoluteURI($webdir),'/\\') . '/' ;
 }
 
-if(isset($conf['general']['syntax_plugin']) && preg_match('/^[a-z0-9_]+$/iD', $conf['general']['syntax_plugin'])) {
+if(isset($fsconf['general']['syntax_plugin']) && preg_match('/^[a-z0-9_]+$/iD', $fsconf['general']['syntax_plugin'])) {
 
-$path_to_plugin = sprintf('%s/plugins/%s/%s_constants.inc.php', BASEDIR, $conf['general']['syntax_plugin'], $conf['general']['syntax_plugin']);
+$path_to_plugin = sprintf('%s/plugins/%s/%s_constants.inc.php', BASEDIR, $fsconf['general']['syntax_plugin'], $fsconf['general']['syntax_plugin']);
 
     if (is_readable($path_to_plugin)) {
         include($path_to_plugin);

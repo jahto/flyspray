@@ -23,7 +23,7 @@ require_once OBJECTS_PATH . '/class.flyspray.php';
 define('CONFIG_PATH', Flyspray::get_config_path(APPLICATION_PATH));
 
 define('TEMPLATE_FOLDER', BASEDIR . '/templates/');
-$conf  = @parse_ini_file(CONFIG_PATH, true) or die('Cannot open config file at ' . CONFIG_PATH);
+$fsconf  = @parse_ini_file(CONFIG_PATH, true) or die('Cannot open config file at ' . CONFIG_PATH);
 
 $borked = str_replace( 'a', 'b', array( -1 => -1 ) );
 
@@ -43,7 +43,7 @@ require_once dirname(__DIR__) . '/vendor/adodb/adodb-php/adodb.inc.php';
 require_once dirname(__DIR__) . '/vendor/adodb/adodb-php/adodb-xmlschema03.inc.php';
 
 $db = new Database;
-$db->dbOpenFast($conf['database']);
+$db->dbOpenFast($fsconf['database']);
 
 // ---------------------------------------------------------------------
 // Application Web locations
@@ -99,7 +99,7 @@ if (Post::val('upgrade')) {
 
 function execute_upgrade_file($folder, $installed_version)
 {
-    global $db, $page, $conf;
+    global $db, $page, $fsconf;
     // At first the config file
     $upgrade_path = BASEDIR . '/upgrade/' . $folder;
     new ConfUpdater(CONFIG_PATH, $upgrade_path);
@@ -126,7 +126,7 @@ function execute_upgrade_file($folder, $installed_version)
         if (substr($file, -4) == '.xml') {
             $schema = new adoSchema($db->dblink);
             $xml = file_get_contents($upgrade_path . '/' . $file);
-            $xml = str_replace('<table name="', '<table name="' . $conf['database']['dbprefix'], $xml);
+            $xml = str_replace('<table name="', '<table name="' . $fsconf['database']['dbprefix'], $xml);
             $schema->ParseSchemaString($xml);
             $schema->ExecuteSchema(null, true);
         }
@@ -305,7 +305,7 @@ $todo['version_compare'] = 'No newer version than yours can be installed with th
 $todo['installed_version'] = 'An upgrade from Flyspray versions lower than 0.9.6 is not possible.
                               You will have to upgrade manually to at least 0.9.6, the scripts which do that are included in all Flyspray releases <= 0.9.8.';
 
-if ($conf['database']['dbtype'] == 'pgsql') {
+if ($fsconf['database']['dbtype'] == 'pgsql') {
     $checks['postgresql_adodb'] = (bool) postgresql_adodb();
     $todo['postgresql_adodb'] = 'You have a version of ADOdb that does not contain overridden version of method ChangeTableSQL for PostgreSQL. '
 	    . 'Please copy setup/upgrade/1.0/datadict-postgres.inc.php to '

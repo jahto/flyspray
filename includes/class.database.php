@@ -43,12 +43,12 @@ class Database
 
     /**
      * Open a connection to the database quickly
-     * @param array $conf connection data
+     * @param array $fsconf connection data
      * @return void
      */
-    public function dbOpenFast($conf)
+    public function dbOpenFast($fsconf)
     {
-        if(!is_array($conf) || extract($conf, EXTR_REFS|EXTR_SKIP) < 5) {
+        if(!is_array($fsconf) || extract($fsconf, EXTR_REFS|EXTR_SKIP) < 5) {
 
             die( 'Flyspray was unable to connect to the database. '
                  .'Check your settings in flyspray.conf.php');
@@ -79,7 +79,7 @@ class Database
 
         if ($this->dblink === false || (!empty($this->dbprefix) && !preg_match('/^[a-z][a-z0-9_]+$/i', $this->dbprefix))) {
 
-            die('Flyspray was unable to connect to the database. '
+            die('2 Flyspray was unable to connect to the database. '
                .'Check your settings in flyspray.conf.php');
         }
             $this->dblink->SetFetchMode(ADODB_FETCH_BOTH);
@@ -301,9 +301,9 @@ class Database
 
     public function GetColumnNames($table, $alt, $prefix)
     {
-        global $conf;
+        global $fsconf;
 
-        if (strcasecmp($conf['database']['dbtype'], 'pgsql')) {
+        if (strcasecmp($fsconf['database']['dbtype'], 'pgsql')) {
             return $alt;
         }
 

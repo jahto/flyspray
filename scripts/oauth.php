@@ -5,110 +5,110 @@ if (!defined('IN_FS')) {
 }
 
 $providers = array(
-    'github' => function() use ($conf) {
-        if (empty($conf['oauth']['github_secret']) ||
-            empty($conf['oauth']['github_id'])     ||
-            empty($conf['oauth']['github_redirect'])) {
+    'github' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['github_secret']) ||
+            empty($fsconf['oauth']['github_id'])     ||
+            empty($fsconf['oauth']['github_redirect'])) {
 
             throw new Exception('Config error make sure the github_* variables are set.');
         }
         return new GithubProvider(array(
-            'clientId'     =>  $conf['oauth']['github_id'],
-            'clientSecret' =>  $conf['oauth']['github_secret'],
-            'redirectUri'  =>  $conf['oauth']['github_redirect'],
+            'clientId'     =>  $fsconf['oauth']['github_id'],
+            'clientSecret' =>  $fsconf['oauth']['github_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['github_redirect'],
             'scopes'       => array('user:email')
         ));
     },
-    'google' => function() use ($conf) {
-        if (empty($conf['oauth']['google_secret']) ||
-            empty($conf['oauth']['google_id'])     ||
-            empty($conf['oauth']['google_redirect'])) {
+    'google' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['google_secret']) ||
+            empty($fsconf['oauth']['google_id'])     ||
+            empty($fsconf['oauth']['google_redirect'])) {
 
             throw new Exception('Config error make sure the google_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\Google(array(
-            'clientId'     =>  $conf['oauth']['google_id'],
-            'clientSecret' =>  $conf['oauth']['google_secret'],
-            'redirectUri'  =>  $conf['oauth']['google_redirect'],
+            'clientId'     =>  $fsconf['oauth']['google_id'],
+            'clientSecret' =>  $fsconf['oauth']['google_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['google_redirect'],
             'scopes'       => array('email', 'profile')
         ));
     },
-    'facebook' => function() use ($conf) {
-        if (empty($conf['oauth']['facebook_secret']) ||
-            empty($conf['oauth']['facebook_id'])     ||
-            empty($conf['oauth']['facebook_redirect'])) {
+    'facebook' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['facebook_secret']) ||
+            empty($fsconf['oauth']['facebook_id'])     ||
+            empty($fsconf['oauth']['facebook_redirect'])) {
 
             throw new Exception('Config error make sure the facebook_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\Facebook(array(
-            'clientId'     =>  $conf['oauth']['facebook_id'],
-            'clientSecret' =>  $conf['oauth']['facebook_secret'],
-            'redirectUri'  =>  $conf['oauth']['facebook_redirect'],
+            'clientId'     =>  $fsconf['oauth']['facebook_id'],
+            'clientSecret' =>  $fsconf['oauth']['facebook_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['facebook_redirect'],
         ));
     },
-    'microsoft' => function() use ($conf) {
-        if (empty($conf['oauth']['microsoft_secret']) ||
-            empty($conf['oauth']['microsoft_id'])     ||
-            empty($conf['oauth']['microsoft_redirect'])) {
+    'microsoft' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['microsoft_secret']) ||
+            empty($fsconf['oauth']['microsoft_id'])     ||
+            empty($fsconf['oauth']['microsoft_redirect'])) {
 
             throw new Exception('Config error make sure the microsoft_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\Microsoft(array(
-            'clientId'     =>  $conf['oauth']['microsoft_id'],
-            'clientSecret' =>  $conf['oauth']['microsoft_secret'],
-            'redirectUri'  =>  $conf['oauth']['microsoft_redirect'],
+            'clientId'     =>  $fsconf['oauth']['microsoft_id'],
+            'clientSecret' =>  $fsconf['oauth']['microsoft_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['microsoft_redirect'],
         ));
     },
-    'instagram' => function() use ($conf) {
-        if (empty($conf['oauth']['instagram_secret']) ||
-            empty($conf['oauth']['instagram_id'])     ||
-            empty($conf['oauth']['instagram_redirect'])) {
+    'instagram' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['instagram_secret']) ||
+            empty($fsconf['oauth']['instagram_id'])     ||
+            empty($fsconf['oauth']['instagram_redirect'])) {
 
             throw new Exception('Config error make sure the instagram_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\Instagram(array(
-            'clientId'     =>  $conf['oauth']['instagram_id'],
-            'clientSecret' =>  $conf['oauth']['instagram_secret'],
-            'redirectUri'  =>  $conf['oauth']['instagram_redirect'],
+            'clientId'     =>  $fsconf['oauth']['instagram_id'],
+            'clientSecret' =>  $fsconf['oauth']['instagram_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['instagram_redirect'],
         ));
     },
-    'eventbrite' => function() use ($conf) {
-        if (empty($conf['oauth']['eventbrite_secret']) ||
-            empty($conf['oauth']['eventbrite_id'])     ||
-            empty($conf['oauth']['eventbrite_redirect'])) {
+    'eventbrite' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['eventbrite_secret']) ||
+            empty($fsconf['oauth']['eventbrite_id'])     ||
+            empty($fsconf['oauth']['eventbrite_redirect'])) {
 
             throw new Exception('Config error make sure the eventbrite_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\Eventbrite(array(
-            'clientId'     =>  $conf['oauth']['eventbrite_id'],
-            'clientSecret' =>  $conf['oauth']['eventbrite_secret'],
-            'redirectUri'  =>  $conf['oauth']['eventbrite_redirect'],
+            'clientId'     =>  $fsconf['oauth']['eventbrite_id'],
+            'clientSecret' =>  $fsconf['oauth']['eventbrite_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['eventbrite_redirect'],
         ));
     },
-    'linkedin' => function() use ($conf) {
-        if (empty($conf['oauth']['linkedin_secret']) ||
-            empty($conf['oauth']['linkedin_id'])     ||
-            empty($conf['oauth']['linkedin_redirect'])) {
+    'linkedin' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['linkedin_secret']) ||
+            empty($fsconf['oauth']['linkedin_id'])     ||
+            empty($fsconf['oauth']['linkedin_redirect'])) {
 
             throw new Exception('Config error make sure the linkedin_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\LinkedIn(array(
-            'clientId'     =>  $conf['oauth']['linkedin_id'],
-            'clientSecret' =>  $conf['oauth']['linkedin_secret'],
-            'redirectUri'  =>  $conf['oauth']['linkedin_redirect'],
+            'clientId'     =>  $fsconf['oauth']['linkedin_id'],
+            'clientSecret' =>  $fsconf['oauth']['linkedin_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['linkedin_redirect'],
         ));
     },
-    'vkontakte' => function() use ($conf) {
-        if (empty($conf['oauth']['vkontakte_secret']) ||
-            empty($conf['oauth']['vkontakte_id'])     ||
-            empty($conf['oauth']['vkontakte_redirect'])) {
+    'vkontakte' => function() use ($fsconf) {
+        if (empty($fsconf['oauth']['vkontakte_secret']) ||
+            empty($fsconf['oauth']['vkontakte_id'])     ||
+            empty($fsconf['oauth']['vkontakte_redirect'])) {
 
             throw new Exception('Config error make sure the vkontakte_* variables are set.');
         }
         return new League\OAuth2\Client\Provider\Vkontakte(array(
-            'clientId'     =>  $conf['oauth']['vkontakte_id'],
-            'clientSecret' =>  $conf['oauth']['vkontakte_secret'],
-            'redirectUri'  =>  $conf['oauth']['vkontakte_redirect'],
+            'clientId'     =>  $fsconf['oauth']['vkontakte_id'],
+            'clientSecret' =>  $fsconf['oauth']['vkontakte_secret'],
+            'redirectUri'  =>  $fsconf['oauth']['vkontakte_redirect'],
         ));
     },
 );
@@ -188,7 +188,7 @@ if (($user_id = Flyspray::checkLogin($user_details->email, null, 'oauth')) < 1) 
 $user = new User($user_id);
 
 // Set a couple of cookies
-$passweirded = crypt($user->infos['user_pass'], $conf['general']['cookiesalt']);
+$passweirded = crypt($user->infos['user_pass'], $fsconf['general']['cookiesalt']);
 Flyspray::setCookie('flyspray_userid', $user->id, 0,null,null,null,true);
 Flyspray::setCookie('flyspray_passhash', $passweirded, 0,null,null,null,true);
 $_SESSION['SUCCESS'] = L('loginsuccessful');

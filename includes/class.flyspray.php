@@ -612,8 +612,8 @@ class Flyspray
      */
     public static function cryptPassword($password)
     {
-        global $conf;
-        $pwcrypt = $conf['general']['passwdcrypt'];
+        global $fsconf;
+        $pwcrypt = $fsconf['general']['passwdcrypt'];
 
         if (strtolower($pwcrypt) == 'sha1') {
             return sha1($password);

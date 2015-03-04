@@ -166,7 +166,7 @@ class Project
 
     function listCategories($project_id = null, $hide_hidden = true, $remove_root = true, $depth = true)
     {
-        global $db, $conf;
+        global $db, $fsconf;
 
         // start with a empty arrays
         $right = array();
