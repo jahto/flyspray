@@ -1,22 +1,21 @@
 <?php
-if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
+if(!defined('DOKU_INC')) die('meh.');
+if (!defined('DOKU_PARSER_EOL')) define('DOKU_PARSER_EOL',"\n");   // add this to make handling test cases simpler
 
 class Doku_Handler {
 
-    var $Renderer = NULL;
+    var $Renderer = null;
 
-    var $CallWriter = NULL;
+    var $CallWriter = null;
 
     var $calls = array();
 
     var $status = array(
-        'section' => FALSE,
-        'section_edit_start' => -1,
-        'section_edit_level' => 1,
-        'section_edit_title' => ''
+        'section' => false,
+        'doublequote' => 0,
     );
 
-    var $rewriteBlocks = TRUE;
+    var $rewriteBlocks = true;
 
     function Doku_Handler() {
         $this->CallWriter = new Doku_Handler_CallWriter($this);
@@ -27,17 +26,18 @@ class Doku_Handler {
         $this->CallWriter->writeCall($call);
     }
 
+    function addPluginCall($plugin, $args, $state, $pos, $match) {
+        $call = array('plugin',array($plugin, $args, $state, $match), $pos);
+        $this->CallWriter->writeCall($call);
+    }
+
     function _finalize(){
 
         $this->CallWriter->finalise();
 
         if ( $this->status['section'] ) {
-           $last_call = end($this->calls);
-           array_push($this->calls,array('section_close',array(), $last_call[2]));
-           if ($this->status['section_edit_start']>1) {
-               // ignore last edit section if there is only one header
-               array_push($this->calls,array('section_edit',array($this->status['section_edit_start'], 0, $this->status['section_edit_level'], $this->status['section_edit_title']), $last_call[2]));
-           }
+            $last_call = end($this->calls);
+            array_push($this->calls,array('section_close',array(), $last_call[2]));
         }
 
         if ( $this->rewriteBlocks ) {
@@ -57,7 +57,7 @@ class Doku_Handler {
         if ( $call ) {
             return $call['value'];
         }
-        return FALSE;
+        return false;
     }
 
 
@@ -71,27 +71,26 @@ class Doku_Handler {
      */
     function plugin($match, $state, $pos, $pluginname){
         $data = array($match);
-        $plugin =& plugin_load('syntax',$pluginname);
+        $plugin = plugin_load('syntax',$pluginname);
         if($plugin != null){
             $data = $plugin->handle($match, $state, $pos, $this);
         }
-        $this->_addCall('plugin',array($pluginname,$data,$state),$pos);
-        return TRUE;
+        if ($data !== false) {
+            $this->addPluginCall($pluginname,$data,$state,$pos,$match);
+        }
+        return true;
     }
 
     function base($match, $state, $pos) {
         switch ( $state ) {
             case DOKU_LEXER_UNMATCHED:
                 $this->_addCall('cdata',array($match), $pos);
-                return TRUE;
+                return true;
             break;
-
         }
     }
 
     function header($match, $state, $pos) {
-        global $conf;
-
         // get level and title
         $title = trim($match);
         $level = 7 - strspn($title,'=');
@@ -101,43 +100,36 @@ class Doku_Handler {
 
         if ($this->status['section']) $this->_addCall('section_close',array(),$pos);
 
-        if ($level<=$conf['maxseclevel']) {
-            $this->_addCall('section_edit',array($this->status['section_edit_start'], $pos-1, $this->status['section_edit_level'], $this->status['section_edit_title']), $pos);
-            $this->status['section_edit_start'] = $pos;
-            $this->status['section_edit_level'] = $level;
-            $this->status['section_edit_title'] = $title;
-        }
-
         $this->_addCall('header',array($title,$level,$pos), $pos);
 
         $this->_addCall('section_open',array($level),$pos);
-        $this->status['section'] = TRUE;
-        return TRUE;
+        $this->status['section'] = true;
+        return true;
     }
 
     function notoc($match, $state, $pos) {
         $this->_addCall('notoc',array(),$pos);
-        return TRUE;
+        return true;
     }
 
     function nocache($match, $state, $pos) {
         $this->_addCall('nocache',array(),$pos);
-        return TRUE;
+        return true;
     }
 
     function linebreak($match, $state, $pos) {
         $this->_addCall('linebreak',array(),$pos);
-        return TRUE;
+        return true;
     }
 
     function eol($match, $state, $pos) {
         $this->_addCall('eol',array(),$pos);
-        return TRUE;
+        return true;
     }
 
     function hr($match, $state, $pos) {
         $this->_addCall('hr',array(),$pos);
-        return TRUE;
+        return true;
     }
 
     function _nestingTag($match, $state, $pos, $name) {
@@ -156,37 +148,37 @@ class Doku_Handler {
 
     function strong($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'strong');
-        return TRUE;
+        return true;
     }
 
     function emphasis($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'emphasis');
-        return TRUE;
+        return true;
     }
 
     function underline($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'underline');
-        return TRUE;
+        return true;
     }
 
     function monospace($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'monospace');
-        return TRUE;
+        return true;
     }
 
     function subscript($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'subscript');
-        return TRUE;
+        return true;
     }
 
     function superscript($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'superscript');
-        return TRUE;
+        return true;
     }
 
     function deleted($match, $state, $pos) {
         $this->_nestingTag($match, $state, $pos, 'deleted');
-        return TRUE;
+        return true;
     }
 
 
@@ -199,8 +191,8 @@ class Doku_Handler {
                 // footnotes can not be nested - however due to limitations in lexer it can't be prevented
                 // we will still enter a new footnote mode, we just do nothing
                 if ($this->_footnote) {
-                  $this->_addCall('cdata',array($match), $pos);
-                  break;
+                    $this->_addCall('cdata',array($match), $pos);
+                    break;
                 }
 
                 $this->_footnote = true;
@@ -212,8 +204,8 @@ class Doku_Handler {
             case DOKU_LEXER_EXIT:
                 // check whether we have already exitted the footnote mode, can happen if the modes were nested
                 if (!$this->_footnote) {
-                  $this->_addCall('cdata',array($match), $pos);
-                  break;
+                    $this->_addCall('cdata',array($match), $pos);
+                    break;
                 }
 
                 $this->_footnote = false;
@@ -227,7 +219,7 @@ class Doku_Handler {
                 $this->_addCall('cdata', array($match), $pos);
             break;
         }
-        return TRUE;
+        return true;
     }
 
     function listblock($match, $state, $pos) {
@@ -250,38 +242,46 @@ class Doku_Handler {
                 $this->_addCall('cdata', array($match), $pos);
             break;
         }
-        return TRUE;
+        return true;
     }
 
     function unformatted($match, $state, $pos) {
         if ( $state == DOKU_LEXER_UNMATCHED ) {
             $this->_addCall('unformatted',array($match), $pos);
         }
-        return TRUE;
+        return true;
     }
 
     function php($match, $state, $pos) {
         global $conf;
         if ( $state == DOKU_LEXER_UNMATCHED ) {
-            if ($conf['phpok']) {
-                $this->_addCall('php',array($match), $pos);
-            } else {
-                $this->_addCall('file',array($match), $pos);
-            }
+            $this->_addCall('php',array($match), $pos);
         }
-        return TRUE;
+        return true;
+    }
+
+    function phpblock($match, $state, $pos) {
+        global $conf;
+        if ( $state == DOKU_LEXER_UNMATCHED ) {
+            $this->_addCall('phpblock',array($match), $pos);
+        }
+        return true;
     }
 
     function html($match, $state, $pos) {
         global $conf;
         if ( $state == DOKU_LEXER_UNMATCHED ) {
-            if($conf['htmlok']){
-                $this->_addCall('html',array($match), $pos);
-            } else {
-                $this->_addCall('file',array($match), $pos);
-            }
+            $this->_addCall('html',array($match), $pos);
         }
-        return TRUE;
+        return true;
+    }
+
+    function htmlblock($match, $state, $pos) {
+        global $conf;
+        if ( $state == DOKU_LEXER_UNMATCHED ) {
+            $this->_addCall('htmlblock',array($match), $pos);
+        }
+        return true;
     }
 
     function preformatted($match, $state, $pos) {
@@ -305,14 +305,7 @@ class Doku_Handler {
             break;
         }
 
-        return TRUE;
-    }
-
-    function file($match, $state, $pos) {
-        if ( $state == DOKU_LEXER_UNMATCHED ) {
-            $this->_addCall('file',array($match), $pos);
-        }
-        return TRUE;
+        return true;
     }
 
     function quote($match, $state, $pos) {
@@ -342,79 +335,90 @@ class Doku_Handler {
 
         }
 
-        return TRUE;
+        return true;
     }
 
-    function code($match, $state, $pos) {
-        switch ( $state ) {
-            case DOKU_LEXER_UNMATCHED:
-                $matches = preg_split('/>/u',$match,2);
-                $matches[0] = trim($matches[0]);
-                if ( trim($matches[0]) == '' ) {
-                    $matches[0] = NULL;
-                }
-                # $matches[0] contains name of programming language
-                # if available, We shortcut html here.
-                if($matches[0] == 'html') $matches[0] = 'html4strict';
-                $this->_addCall(
-                        'code',
-                        array($matches[1],$matches[0]),
-                        $pos
-                    );
-            break;
+    function file($match, $state, $pos) {
+        return $this->code($match, $state, $pos, 'file');
+    }
+
+    function code($match, $state, $pos, $type='code') {
+        if ( $state == DOKU_LEXER_UNMATCHED ) {
+            $matches = explode('>',$match,2);
+
+            $param = preg_split('/\s+/', $matches[0], 2, PREG_SPLIT_NO_EMPTY);
+            while(count($param) < 2) array_push($param, null);
+
+            // We shortcut html here.
+            if ($param[0] == 'html') $param[0] = 'html4strict';
+            if ($param[0] == '-') $param[0] = null;
+            array_unshift($param, $matches[1]);
+
+            $this->_addCall($type, $param, $pos);
         }
-        return TRUE;
+        return true;
     }
 
     function acronym($match, $state, $pos) {
         $this->_addCall('acronym',array($match), $pos);
-        return TRUE;
+        return true;
     }
 
     function smiley($match, $state, $pos) {
         $this->_addCall('smiley',array($match), $pos);
-        return TRUE;
+        return true;
     }
 
     function wordblock($match, $state, $pos) {
         $this->_addCall('wordblock',array($match), $pos);
-        return TRUE;
+        return true;
     }
 
     function entity($match, $state, $pos) {
         $this->_addCall('entity',array($match), $pos);
-        return TRUE;
+        return true;
     }
 
     function multiplyentity($match, $state, $pos) {
         preg_match_all('/\d+/',$match,$matches);
         $this->_addCall('multiplyentity',array($matches[0][0],$matches[0][1]), $pos);
-        return TRUE;
+        return true;
     }
 
     function singlequoteopening($match, $state, $pos) {
         $this->_addCall('singlequoteopening',array(), $pos);
-        return TRUE;
+        return true;
     }
 
     function singlequoteclosing($match, $state, $pos) {
         $this->_addCall('singlequoteclosing',array(), $pos);
-        return TRUE;
+        return true;
+    }
+
+    function apostrophe($match, $state, $pos) {
+        $this->_addCall('apostrophe',array(), $pos);
+        return true;
     }
 
     function doublequoteopening($match, $state, $pos) {
         $this->_addCall('doublequoteopening',array(), $pos);
-        return TRUE;
+        $this->status['doublequote']++;
+        return true;
     }
 
     function doublequoteclosing($match, $state, $pos) {
-        $this->_addCall('doublequoteclosing',array(), $pos);
-        return TRUE;
+        if ($this->status['doublequote'] <= 0) {
+            $this->doublequoteopening($match, $state, $pos);
+        } else {
+            $this->_addCall('doublequoteclosing',array(), $pos);
+            $this->status['doublequote'] = max(0, --$this->status['doublequote']);
+        }
+        return true;
     }
 
     function camelcaselink($match, $state, $pos) {
         $this->_addCall('camelcaselink',array($match), $pos);
-        return TRUE;
+        return true;
     }
 
     /*
@@ -424,9 +428,9 @@ class Doku_Handler {
         $link = preg_replace(array('/^\[\[/','/\]\]$/u'),'',$match);
 
         // Split title from URL
-        $link = preg_split('/\|/u',$link,2);
+        $link = explode('|',$link,2);
         if ( !isset($link[1]) ) {
-            $link[1] = NULL;
+            $link[1] = null;
         } else if ( preg_match('/^\{\{[^\}]+\}\}$/',$link[1]) ) {
             // If the title is an image, convert it to an array containing the image details
             $link[1] = Doku_Handler_Parse_Media($link[1]);
@@ -435,44 +439,44 @@ class Doku_Handler {
 
         //decide which kind of link it is
 
-        if ( preg_match('/^[a-zA-Z\.]+>{1}.*$/u',$link[0]) ) {
-        // Interwiki
-            $interwiki = preg_split('/>/u',$link[0]);
+        if ( preg_match('/^[a-zA-Z0-9\.]+>{1}.*$/u',$link[0]) ) {
+            // Interwiki
+            $interwiki = explode('>',$link[0],2);
             $this->_addCall(
                 'interwikilink',
                 array($link[0],$link[1],strtolower($interwiki[0]),$interwiki[1]),
                 $pos
                 );
-        }elseif ( preg_match('/^\\\\\\\\[\w.:?\-;,]+?\\\\/u',$link[0]) ) {
-        // Windows Share
+        }elseif ( preg_match('/^\\\\\\\\[^\\\\]+?\\\\/u',$link[0]) ) {
+            // Windows Share
             $this->_addCall(
                 'windowssharelink',
                 array($link[0],$link[1]),
                 $pos
                 );
         }elseif ( preg_match('#^([a-z0-9\-\.+]+?)://#i',$link[0]) ) {
-        // external link (accepts all protocols)
+            // external link (accepts all protocols)
             $this->_addCall(
                     'externallink',
                     array($link[0],$link[1]),
                     $pos
                     );
-        }elseif ( preg_match('#([a-z0-9\-_.]+?)@([\w\-]+\.([\w\-\.]+\.)*[\w]+)#i',$link[0]) ) {
-        // E-Mail
+        }elseif ( preg_match('<'.PREG_PATTERN_VALID_EMAIL.'>',$link[0]) ) {
+            // E-Mail (pattern above is defined in inc/mail.php)
             $this->_addCall(
                 'emaillink',
                 array($link[0],$link[1]),
                 $pos
                 );
         }elseif ( preg_match('!^#.+!',$link[0]) ){
-        // local link
+            // local link
             $this->_addCall(
                 'locallink',
                 array(substr($link[0],1),$link[1]),
                 $pos
                 );
         }else{
-        // internal link
+            // internal link
             $this->_addCall(
                 'internallink',
                 array($link[0],$link[1]),
@@ -480,17 +484,17 @@ class Doku_Handler {
                 );
         }
 
-        return TRUE;
+        return true;
     }
 
     function filelink($match, $state, $pos) {
-        $this->_addCall('filelink',array($match, NULL), $pos);
-        return TRUE;
+        $this->_addCall('filelink',array($match, null), $pos);
+        return true;
     }
 
     function windowssharelink($match, $state, $pos) {
-        $this->_addCall('windowssharelink',array($match, NULL), $pos);
-        return TRUE;
+        $this->_addCall('windowssharelink',array($match, null), $pos);
+        return true;
     }
 
     function media($match, $state, $pos) {
@@ -502,7 +506,7 @@ class Doku_Handler {
                      $p['height'], $p['cache'], $p['linking']),
               $pos
              );
-        return TRUE;
+        return true;
     }
 
     function rss($match, $state, $pos) {
@@ -523,33 +527,38 @@ class Doku_Handler {
         $p['details'] = (preg_match('/\b(desc|detail)/',$params));
 
         if (preg_match('/\b(\d+)([dhm])\b/',$params,$match)) {
-          $period = array('d' => 86400, 'h' => 3600, 'm' => 60);
-          $p['refresh'] = max(600,$match[1]*$period[$match[2]]);  // n * period in seconds, minimum 10 minutes
+            $period = array('d' => 86400, 'h' => 3600, 'm' => 60);
+            $p['refresh'] = max(600,$match[1]*$period[$match[2]]);  // n * period in seconds, minimum 10 minutes
         } else {
-          $p['refresh'] = 14400;   // default to 4 hours
+            $p['refresh'] = 14400;   // default to 4 hours
         }
 
         $this->_addCall('rss',array($link,$p),$pos);
-        return TRUE;
+        return true;
     }
 
     function externallink($match, $state, $pos) {
-        // Prevent use of multibyte strings in URLs
-        // See: http://www.boingboing.net/2005/02/06/shmoo_group_exploit_.html
-        // Not worried about other charsets so long as page is output as UTF-8
-        /*if ( strlen($match) != utf8_strlen($match) ) {
-            $this->_addCall('cdata',array($match), $pos);
-        } else {*/
+        $url   = $match;
+        $title = null;
 
-            $this->_addCall('externallink',array($match, NULL), $pos);
-        //}
-        return TRUE;
+        // add protocol on simple short URLs
+        if(substr($url,0,3) == 'ftp' && (substr($url,0,6) != 'ftp://')){
+            $title = $url;
+            $url   = 'ftp://'.$url;
+        }
+        if(substr($url,0,3) == 'www' && (substr($url,0,7) != 'http://')){
+            $title = $url;
+            $url = 'http://'.$url;
+        }
+
+        $this->_addCall('externallink',array($url, $title), $pos);
+        return true;
     }
 
     function emaillink($match, $state, $pos) {
         $email = preg_replace(array('/^</','/>$/'),'',$match);
-        $this->_addCall('emaillink',array($email, NULL), $pos);
-        return TRUE;
+        $this->_addCall('emaillink',array($email, null), $pos);
+        return true;
     }
 
     function table($match, $state, $pos) {
@@ -560,8 +569,7 @@ class Doku_Handler {
                 $ReWriter = new Doku_Handler_Table($this->CallWriter);
                 $this->CallWriter = & $ReWriter;
 
-                $this->_addCall('table_start', array(), $pos);
-                //$this->_addCall('table_row', array(), $pos);
+                $this->_addCall('table_start', array($pos + 1), $pos);
                 if ( trim($match) == '^' ) {
                     $this->_addCall('tableheader', array(), $pos);
                 } else {
@@ -570,7 +578,7 @@ class Doku_Handler {
             break;
 
             case DOKU_LEXER_EXIT:
-                $this->_addCall('table_end', array(), $pos);
+                $this->_addCall('table_end', array($pos), $pos);
                 $this->CallWriter->process();
                 $ReWriter = & $this->CallWriter;
                 $this->CallWriter = & $ReWriter->CallWriter;
@@ -585,6 +593,8 @@ class Doku_Handler {
             case DOKU_LEXER_MATCHED:
                 if ( $match == ' ' ){
                     $this->_addCall('cdata', array($match), $pos);
+                } else if ( preg_match('/:::/',$match) ) {
+                    $this->_addCall('rowspan', array($match), $pos);
                 } else if ( preg_match('/\t+/',$match) ) {
                     $this->_addCall('table_align', array($match), $pos);
                 } else if ( preg_match('/ {2,}/',$match) ) {
@@ -602,7 +612,7 @@ class Doku_Handler {
                 }
             break;
         }
-        return TRUE;
+        return true;
     }
 }
 
@@ -613,8 +623,7 @@ function Doku_Handler_Parse_Media($match) {
     $link = preg_replace(array('/^\{\{/','/\}\}$/u'),'',$match);
 
     // Split title from URL
-    $link = preg_split('/\|/u',$link,2);
-
+    $link = explode('|',$link,2);
 
     // Check alignment
     $ralign = (bool)preg_match('/^ /',$link[0]);
@@ -628,12 +637,12 @@ function Doku_Handler_Parse_Media($match) {
     } else if ( $lalign ) {
         $align = 'left';
     } else {
-        $align = NULL;
+        $align = null;
     }
 
     // The title...
     if ( !isset($link[1]) ) {
-        $link[1] = NULL;
+        $link[1] = null;
     }
 
     //remove aligning spaces
@@ -651,11 +660,11 @@ function Doku_Handler_Parse_Media($match) {
 
     //parse width and height
     if(preg_match('#(\d+)(x(\d+))?#i',$param,$size)){
-        ($size[1]) ? $w = $size[1] : $w = NULL;
-        ($size[3]) ? $h = $size[3] : $h = NULL;
+        !empty($size[1]) ? $w = $size[1] : $w = null;
+        !empty($size[3]) ? $h = $size[3] : $h = null;
     } else {
-        $w = NULL;
-        $h = NULL;
+        $w = null;
+        $h = null;
     }
 
     //get linking command
@@ -663,6 +672,8 @@ function Doku_Handler_Parse_Media($match) {
         $linking = 'nolink';
     }else if(preg_match('/direct/i',$param)){
         $linking = 'direct';
+    }else if(preg_match('/linkonly/i',$param)){
+        $linking = 'linkonly';
     }else{
         $linking = 'details';
     }
@@ -675,7 +686,7 @@ function Doku_Handler_Parse_Media($match) {
     }
 
     // Check whether this is a local or remote image
-    if ( preg_match('#^(https?|ftp)#i',$src) ) {
+    if ( media_isexternal($src) ) {
         $call = 'externalmedia';
     } else {
         $call = 'internalmedia';
@@ -715,6 +726,7 @@ class Doku_Handler_CallWriter {
     // function is required, but since this call writer is first/highest in
     // the chain it is not required to do anything
     function finalise() {
+        unset($this->Handler);
     }
 }
 
@@ -759,11 +771,29 @@ class Doku_Handler_Nest {
 
         $this->process();
         $this->CallWriter->finalise();
+        unset($this->CallWriter);
     }
 
     function process() {
+        // merge consecutive cdata
+        $unmerged_calls = $this->calls;
+        $this->calls = array();
+
+        foreach ($unmerged_calls as $call) $this->addCall($call);
+
         $first_call = reset($this->calls);
         $this->CallWriter->writeCall(array("nest", array($this->calls), $first_call[2]));
+    }
+
+    function addCall($call) {
+        $key = count($this->calls);
+        if ($key and ($call[0] == 'cdata') and ($this->calls[$key-1][0] == 'cdata')) {
+            $this->calls[$key-1][1][0] .= $call[1][0];
+        } else if ($call[0] == 'eol') {
+            // do nothing (eol shouldn't be allowed, to counter preformatted fix in #1652 & #1699)
+        } else {
+            $this->calls[] = $call;
+        }
     }
 }
 
@@ -795,6 +825,7 @@ class Doku_Handler_List {
 
         $this->process();
         $this->CallWriter->finalise();
+        unset($this->CallWriter);
     }
 
     //------------------------------------------------------------------------
@@ -834,12 +865,12 @@ class Doku_Handler_List {
 
     //------------------------------------------------------------------------
     function listEnd($call) {
-        $closeContent = TRUE;
+        $closeContent = true;
 
         while ( $list = array_pop($this->listStack) ) {
             if ( $closeContent ) {
                 $this->listCalls[] = array('listcontent_close',array(),$call[2]);
-                $closeContent = FALSE;
+                $closeContent = false;
             }
             $this->listCalls[] = array('listitem_close',array(),$call[2]);
             $this->listCalls[] = array('list'.$list[0].'_close', array(), $call[2]);
@@ -955,7 +986,9 @@ class Doku_Handler_List {
         } else {
             $type = 'o';
         }
-        return count(explode('  ',str_replace("\t",'  ',$match)));
+        // Is the +1 needed? It used to be count(explode(...))
+        // but I don't think the number is seen outside this handler
+        return substr_count(str_replace("\t",'  ',$match), '  ') + 1;
     }
 }
 
@@ -990,6 +1023,7 @@ class Doku_Handler_Preformatted {
 
         $this->process();
         $this->CallWriter->finalise();
+        unset($this->CallWriter);
     }
 
     function process() {
@@ -1005,7 +1039,12 @@ class Doku_Handler_Preformatted {
                     $this->text .= $call[1][0];
                 break;
                 case 'preformatted_end':
-                    $this->CallWriter->writeCall(array('preformatted',array($this->text),$this->pos));
+                    if (trim($this->text)) {
+                        $this->CallWriter->writeCall(array('preformatted',array($this->text),$this->pos));
+                    }
+                    // see FS#1699 & FS#1652, add 'eol' instructions to ensure proper triggering of following p_open
+                    $this->CallWriter->writeCall(array('eol',array(),$this->pos));
+                    $this->CallWriter->writeCall(array('eol',array(),$this->pos));
                 break;
             }
         }
@@ -1033,7 +1072,6 @@ class Doku_Handler_Quote {
     // Probably not needed but just in case...
     function writeCalls($calls) {
         $this->calls = array_merge($this->calls, $calls);
-#        $this->CallWriter->writeCalls($this->calls);
     }
 
     function finalise() {
@@ -1042,6 +1080,7 @@ class Doku_Handler_Quote {
 
         $this->process();
         $this->CallWriter->finalise();
+        unset($this->CallWriter);
     }
 
     function process() {
@@ -1071,7 +1110,7 @@ class Doku_Handler_Quote {
                         }
                     } else {
                         if ($call[0] != 'quote_start') $this->quoteCalls[] = array('linebreak',array(),$call[2]);
-                    } 
+                    }
 
                     $quoteDepth = $quoteLength;
 
@@ -1115,8 +1154,11 @@ class Doku_Handler_Table {
     var $maxCols = 0;
     var $maxRows = 1;
     var $currentCols = 0;
-    var $firstCell = FALSE;
+    var $firstCell = false;
     var $lastCellType = 'tablecell';
+    var $inTableHead = true;
+    var $currentRow = array('tableheader' => 0, 'tablecell' => 0);
+    var $countTableHeadRows = 0;
 
     function Doku_Handler_Table(& $CallWriter) {
         $this->CallWriter = & $CallWriter;
@@ -1129,7 +1171,6 @@ class Doku_Handler_Table {
     // Probably not needed but just in case...
     function writeCalls($calls) {
         $this->calls = array_merge($this->calls, $calls);
-#        $this->CallWriter->writeCalls($this->calls);
     }
 
     function finalise() {
@@ -1138,6 +1179,7 @@ class Doku_Handler_Table {
 
         $this->process();
         $this->CallWriter->finalise();
+        unset($this->CallWriter);
     }
 
     //------------------------------------------------------------------------
@@ -1148,7 +1190,7 @@ class Doku_Handler_Table {
                     $this->tableStart($call);
                 break;
                 case 'table_row':
-                    $this->tableRowClose(array('tablerow_close',$call[1],$call[2]));
+                    $this->tableRowClose($call);
                     $this->tableRowOpen(array('tablerow_open',$call[1],$call[2]));
                 break;
                 case 'tableheader':
@@ -1156,7 +1198,7 @@ class Doku_Handler_Table {
                     $this->tableCell($call);
                 break;
                 case 'table_end':
-                    $this->tableRowClose(array('tablerow_close',$call[1],$call[2]));
+                    $this->tableRowClose($call);
                     $this->tableEnd($call);
                 break;
                 default:
@@ -1168,53 +1210,62 @@ class Doku_Handler_Table {
     }
 
     function tableStart($call) {
-        $this->tableCalls[] = array('table_open',array(),$call[2]);
+        $this->tableCalls[] = array('table_open',$call[1],$call[2]);
         $this->tableCalls[] = array('tablerow_open',array(),$call[2]);
-        $this->firstCell = TRUE;
+        $this->firstCell = true;
     }
 
     function tableEnd($call) {
-        $this->tableCalls[] = array('table_close',array(),$call[2]);
+        $this->tableCalls[] = array('table_close',$call[1],$call[2]);
         $this->finalizeTable();
     }
 
     function tableRowOpen($call) {
         $this->tableCalls[] = $call;
         $this->currentCols = 0;
-        $this->firstCell = TRUE;
+        $this->firstCell = true;
         $this->lastCellType = 'tablecell';
         $this->maxRows++;
+        if ($this->inTableHead) {
+            $this->currentRow = array('tablecell' => 0, 'tableheader' => 0);
+        }
     }
 
     function tableRowClose($call) {
+        if ($this->inTableHead && ($this->inTableHead = $this->isTableHeadRow())) {
+            $this->countTableHeadRows++;
+        }
         // Strip off final cell opening and anything after it
         while ( $discard = array_pop($this->tableCalls ) ) {
 
             if ( $discard[0] == 'tablecell_open' || $discard[0] == 'tableheader_open') {
-
-                // Its a spanning element - put it back and close it
-                if ( $discard[1][0] > 1 ) {
-
-                    $this->tableCalls[] = $discard;
-                    if ( strstr($discard[0],'cell') ) {
-                        $name = 'tablecell';
-                    } else {
-                        $name = 'tableheader';
-                    }
-                    $this->tableCalls[] = array($name.'_close',array(),$call[2]);
-                }
-
                 break;
             }
+            if (!empty($this->currentRow[$discard[0]])) {
+                $this->currentRow[$discard[0]]--;
+            }
         }
-        $this->tableCalls[] = $call;
+        $this->tableCalls[] = array('tablerow_close', array(), $call[2]);
 
         if ( $this->currentCols > $this->maxCols ) {
             $this->maxCols = $this->currentCols;
         }
     }
 
+    function isTableHeadRow() {
+        $td = $this->currentRow['tablecell'];
+        $th = $this->currentRow['tableheader'];
+
+        if (!$th || $td > 2) return false;
+        if (2*$td > $th) return false;
+
+        return true;
+    }
+
     function tableCell($call) {
+        if ($this->inTableHead) {
+            $this->currentRow[$call[0]]++;
+        }
         if ( !$this->firstCell ) {
 
             // Increase the span
@@ -1227,14 +1278,14 @@ class Doku_Handler_Table {
             }
 
             $this->tableCalls[] = array($this->lastCellType.'_close',array(),$call[2]);
-            $this->tableCalls[] = array($call[0].'_open',array(1,NULL),$call[2]);
+            $this->tableCalls[] = array($call[0].'_open',array(1,null,1),$call[2]);
             $this->lastCellType = $call[0];
 
         } else {
 
-            $this->tableCalls[] = array($call[0].'_open',array(1,NULL),$call[2]);
+            $this->tableCalls[] = array($call[0].'_open',array(1,null,1),$call[2]);
             $this->lastCellType = $call[0];
-            $this->firstCell = FALSE;
+            $this->firstCell = false;
 
         }
 
@@ -1252,69 +1303,158 @@ class Doku_Handler_Table {
             // Adjust to num cols not num col delimeters
             $this->tableCalls[0][1][] = $this->maxCols - 1;
             $this->tableCalls[0][1][] = $this->maxRows;
+            $this->tableCalls[0][1][] = array_shift($this->tableCalls[0][1]);
         } else {
             trigger_error('First element in table call list is not table_open');
         }
 
         $lastRow = 0;
         $lastCell = 0;
+        $cellKey = array();
         $toDelete = array();
+
+        // if still in tableheader, then there can be no table header
+        // as all rows can't be within <THEAD>
+        if ($this->inTableHead) {
+            $this->inTableHead = false;
+            $this->countTableHeadRows = 0;
+        }
 
         // Look for the colspan elements and increment the colspan on the
         // previous non-empty opening cell. Once done, delete all the cells
         // that contain colspans
-        foreach ( $this->tableCalls as $key => $call ) {
+        for ($key = 0 ; $key < count($this->tableCalls) ; ++$key) {
+            $call = $this->tableCalls[$key];
 
-            if ( $call[0] == 'tablerow_open' ) {
-
-                $lastRow = $key;
-
-            } else if ( $call[0] == 'tablecell_open' || $call[0] == 'tableheader_open' ) {
-
-                $lastCell = $key;
-
-            } else if ( $call[0] == 'table_align' ) {
-
-                // If the previous element was a cell open, align right
-                if ( $this->tableCalls[$key-1][0] == 'tablecell_open' || $this->tableCalls[$key-1][0] == 'tableheader_open' ) {
-                    $this->tableCalls[$key-1][1][1] = 'right';
-
-                // If the next element if the close of an element, align either center or left
-                } else if ( $this->tableCalls[$key+1][0] == 'tablecell_close' || $this->tableCalls[$key+1][0] == 'tableheader_close' ) {
-                    if ( $this->tableCalls[$lastCell][1][1] == 'right' ) {
-                        $this->tableCalls[$lastCell][1][1] = 'center';
-                    } else {
-                        $this->tableCalls[$lastCell][1][1] = 'left';
+            switch ($call[0]) {
+                case 'table_open' :
+                    if($this->countTableHeadRows) {
+                        array_splice($this->tableCalls, $key+1, 0, array(
+                              array('tablethead_open', array(), $call[2]))
+                        );
                     }
+                    break;
 
-                }
+                case 'tablerow_open':
 
-                // Now convert the whitespace back to cdata
-                $this->tableCalls[$key][0] = 'cdata';
+                    $lastRow++;
+                    $lastCell = 0;
+                    break;
 
-            } else if ( $call[0] == 'colspan' ) {
+                case 'tablecell_open':
+                case 'tableheader_open':
 
-                $this->tableCalls[$key-1][1][0] = FALSE;
+                    $lastCell++;
+                    $cellKey[$lastRow][$lastCell] = $key;
+                    break;
 
-                for($i = $key-2; $i > $lastRow; $i--) {
+                case 'table_align':
 
-                    if ( $this->tableCalls[$i][0] == 'tablecell_open' || $this->tableCalls[$i][0] == 'tableheader_open' ) {
+                    $prev = in_array($this->tableCalls[$key-1][0], array('tablecell_open', 'tableheader_open'));
+                    $next = in_array($this->tableCalls[$key+1][0], array('tablecell_close', 'tableheader_close'));
+                    // If the cell is empty, align left
+                    if ($prev && $next) {
+                        $this->tableCalls[$key-1][1][1] = 'left';
 
-                        if ( FALSE !== $this->tableCalls[$i][1][0] ) {
-                            $this->tableCalls[$i][1][0]++;
-                            break;
+                    // If the previous element was a cell open, align right
+                    } elseif ($prev) {
+                        $this->tableCalls[$key-1][1][1] = 'right';
+
+                    // If the next element is the close of an element, align either center or left
+                    } elseif ( $next) {
+                        if ( $this->tableCalls[$cellKey[$lastRow][$lastCell]][1][1] == 'right' ) {
+                            $this->tableCalls[$cellKey[$lastRow][$lastCell]][1][1] = 'center';
+                        } else {
+                            $this->tableCalls[$cellKey[$lastRow][$lastCell]][1][1] = 'left';
                         }
 
-
                     }
-                }
 
-                $toDelete[] = $key-1;
-                $toDelete[] = $key;
-                $toDelete[] = $key+1;
+                    // Now convert the whitespace back to cdata
+                    $this->tableCalls[$key][0] = 'cdata';
+                    break;
+
+                case 'colspan':
+
+                    $this->tableCalls[$key-1][1][0] = false;
+
+                    for($i = $key-2; $i >= $cellKey[$lastRow][1]; $i--) {
+
+                        if ( $this->tableCalls[$i][0] == 'tablecell_open' || $this->tableCalls[$i][0] == 'tableheader_open' ) {
+
+                            if ( false !== $this->tableCalls[$i][1][0] ) {
+                                $this->tableCalls[$i][1][0]++;
+                                break;
+                            }
+
+                        }
+                    }
+
+                    $toDelete[] = $key-1;
+                    $toDelete[] = $key;
+                    $toDelete[] = $key+1;
+                    break;
+
+                case 'rowspan':
+
+                    if ( $this->tableCalls[$key-1][0] == 'cdata' ) {
+                        // ignore rowspan if previous call was cdata (text mixed with :::) we don't have to check next call as that wont match regex
+                        $this->tableCalls[$key][0] = 'cdata';
+
+                    } else {
+
+                        $spanning_cell = null;
+
+                        // can't cross thead/tbody boundary
+                        if (!$this->countTableHeadRows || ($lastRow-1 != $this->countTableHeadRows)) {
+                            for($i = $lastRow-1; $i > 0; $i--) {
+
+                                if ( $this->tableCalls[$cellKey[$i][$lastCell]][0] == 'tablecell_open' || $this->tableCalls[$cellKey[$i][$lastCell]][0] == 'tableheader_open' ) {
+
+                                    if ($this->tableCalls[$cellKey[$i][$lastCell]][1][2] >= $lastRow - $i) {
+                                        $spanning_cell = $i;
+                                        break;
+                                    }
+
+                                }
+                            }
+                        }
+                        if (is_null($spanning_cell)) {
+                            // No spanning cell found, so convert this cell to
+                            // an empty one to avoid broken tables
+                            $this->tableCalls[$key][0] = 'cdata';
+                            $this->tableCalls[$key][1][0] = '';
+                            continue;
+                        }
+                        $this->tableCalls[$cellKey[$spanning_cell][$lastCell]][1][2]++;
+
+                        $this->tableCalls[$key-1][1][2] = false;
+
+                        $toDelete[] = $key-1;
+                        $toDelete[] = $key;
+                        $toDelete[] = $key+1;
+                    }
+                    break;
+
+                case 'tablerow_close':
+
+                    // Fix broken tables by adding missing cells
+                    while (++$lastCell < $this->maxCols) {
+                        array_splice($this->tableCalls, $key, 0, array(
+                               array('tablecell_open', array(1, null, 1), $call[2]),
+                               array('cdata', array(''), $call[2]),
+                               array('tablecell_close', array(), $call[2])));
+                        $key += 3;
+                    }
+
+                    if($this->countTableHeadRows == $lastRow) {
+                        array_splice($this->tableCalls, $key+1, 0, array(
+                              array('tablethead_close', array(), $call[2])));
+                    }
+                    break;
+
             }
         }
-
 
         // condense cdata
         $cnt = count($this->tableCalls);
@@ -1338,45 +1478,6 @@ class Doku_Handler_Table {
     }
 }
 
-//------------------------------------------------------------------------
-class Doku_Handler_Section {
-
-    function process($calls) {
-
-        $sectionCalls = array();
-        $inSection = FALSE;
-
-        foreach ( $calls as $call ) {
-
-            if ( $call[0] == 'header' ) {
-
-                if ( $inSection ) {
-                    $sectionCalls[] = array('section_close',array(), $call[2]);
-                }
-
-                $sectionCalls[] = $call;
-                $sectionCalls[] = array('section_open',array($call[1][1]), $call[2]);
-                $inSection = TRUE;
-
-            } else {
-
-                if ($call[0] == 'section_open' )  {
-                    $inSection = TRUE;
-                } else if ($call[0] == 'section_open' ) {
-                    $inSection = FALSE;
-                }
-                $sectionCalls[] = $call;
-            }
-        }
-
-        if ( $inSection ) {
-            $sectionCalls[] = array('section_close',array(), $call[2]);
-        }
-
-        return $sectionCalls;
-    }
-
-}
 
 /**
  * Handler for paragraphs
@@ -1384,41 +1485,38 @@ class Doku_Handler_Section {
  * @author Harry Fuecks <hfuecks@gmail.com>
  */
 class Doku_Handler_Block {
-
     var $calls = array();
-
-    var $blockStack = array();
-
-    var $inParagraph = FALSE;
-    var $atStart = TRUE;
-    var $skipEolKey = -1;
+    var $skipEol = false;
+    var $inParagraph = false;
 
     // Blocks these should not be inside paragraphs
     var $blockOpen = array(
             'header',
             'listu_open','listo_open','listitem_open','listcontent_open',
-            'table_open','tablerow_open','tablecell_open','tableheader_open',
+            'table_open','tablerow_open','tablecell_open','tableheader_open','tablethead_open',
             'quote_open',
-            'section_open', // Needed to prevent p_open between header and section_open
             'code','file','hr','preformatted','rss',
+            'htmlblock','phpblock',
+            'footnote_open',
         );
 
     var $blockClose = array(
             'header',
             'listu_close','listo_close','listitem_close','listcontent_close',
-            'table_close','tablerow_close','tablecell_close','tableheader_close',
+            'table_close','tablerow_close','tablecell_close','tableheader_close','tablethead_close',
             'quote_close',
-            'section_close', // Needed to prevent p_close after section_close
             'code','file','hr','preformatted','rss',
+            'htmlblock','phpblock',
+            'footnote_close',
         );
 
     // Stacks can contain paragraphs
     var $stackOpen = array(
-        'footnote_open','section_open',
+        'section_open',
         );
 
     var $stackClose = array(
-        'footnote_close','section_close',
+        'section_close',
         );
 
 
@@ -1444,6 +1542,13 @@ class Doku_Handler_Block {
         }
     }
 
+    function openParagraph($pos){
+        if ($this->inParagraph) return;
+        $this->calls[] = array('p_open',array(), $pos);
+        $this->inParagraph = true;
+        $this->skipEol = true;
+    }
+
     /**
      * Close a paragraph if needed
      *
@@ -1452,9 +1557,11 @@ class Doku_Handler_Block {
      * @author Andreas Gohr <andi@splitbrain.org>
      */
     function closeParagraph($pos){
+        if (!$this->inParagraph) return;
         // look back if there was any content - we don't want empty paragraphs
         $content = '';
-        for($i=count($this->calls)-1; $i>=0; $i--){
+        $ccount = count($this->calls);
+        for($i=$ccount-1; $i>=0; $i--){
             if($this->calls[$i][0] == 'p_open'){
                 break;
             }elseif($this->calls[$i][0] == 'cdata'){
@@ -1467,18 +1574,31 @@ class Doku_Handler_Block {
 
         if(trim($content)==''){
             //remove the whole paragraph
-            array_splice($this->calls,$i);
+            //array_splice($this->calls,$i); // <- this is much slower than the loop below
+            for($x=$ccount; $x>$i; $x--) array_pop($this->calls);
         }else{
-            if ($this->calls[count($this->calls)-1][0] == 'section_edit') {
-                $tmp = array_pop($this->calls);
-                $this->calls[] = array('p_close',array(), $pos);
-                $this->calls[] = $tmp;
-            } else {
-                $this->calls[] = array('p_close',array(), $pos);
-            }
+            // remove ending linebreaks in the paragraph
+            $i=count($this->calls)-1;
+            if ($this->calls[$i][0] == 'cdata') $this->calls[$i][1][0] = rtrim($this->calls[$i][1][0],DOKU_PARSER_EOL);
+            $this->calls[] = array('p_close',array(), $pos);
         }
 
-        $this->inParagraph = FALSE;
+        $this->inParagraph = false;
+        $this->skipEol = true;
+    }
+
+    function addCall($call) {
+        $key = count($this->calls);
+        if ($key and ($call[0] == 'cdata') and ($this->calls[$key-1][0] == 'cdata')) {
+            $this->calls[$key-1][1][0] .= $call[1][0];
+        } else {
+            $this->calls[] = $call;
+        }
+    }
+
+    // simple version of addCall, without checking cdata
+    function storeCall($call) {
+        $this->calls[] = $call;
     }
 
     /**
@@ -1486,168 +1606,71 @@ class Doku_Handler_Block {
      *
      * @author Harry Fuecks <hfuecks@gmail.com>
      * @author Andreas Gohr <andi@splitbrain.org>
-     * @todo   This thing is really messy and should be rewritten
      */
     function process($calls) {
+        // open first paragraph
+        $this->openParagraph(0);
         foreach ( $calls as $key => $call ) {
             $cname = $call[0];
-            if($cname == 'plugin') {
+            if ($cname == 'plugin') {
                 $cname='plugin_'.$call[1][0];
-
                 $plugin = true;
                 $plugin_open = (($call[1][2] == DOKU_LEXER_ENTER) || ($call[1][2] == DOKU_LEXER_SPECIAL));
                 $plugin_close = (($call[1][2] == DOKU_LEXER_EXIT) || ($call[1][2] == DOKU_LEXER_SPECIAL));
             } else {
                 $plugin = false;
             }
-
-            // Process blocks which are stack like... (contain linefeeds)
-            if ( in_array($cname,$this->stackOpen ) && (!$plugin || $plugin_open) ) {
-
-                $this->calls[] = $call;
-
-                // Hack - footnotes shouldn't immediately contain a p_open
-                if ( $cname != 'footnote_open' ) {
-                    $this->addToStack();
-                } else {
-                    $this->addToStack(FALSE);
-                }
-                continue;
-            }
-
+            /* stack */
             if ( in_array($cname,$this->stackClose ) && (!$plugin || $plugin_close)) {
-
-                if ( $this->inParagraph ) {
-                    $this->closeParagraph($call[2]);
-                }
-                $this->calls[] = $call;
-                $this->removeFromStack();
+                $this->closeParagraph($call[2]);
+                $this->storeCall($call);
+                $this->openParagraph($call[2]);
                 continue;
             }
-
-            if ( !$this->atStart ) {
-
-                if ( $cname == 'eol' ) {
-
-                    // Check this isn't an eol instruction to skip...
-                    if ( $this->skipEolKey != $key ) {
-                        // Look to see if the next instruction is an EOL
-                        if ( isset($calls[$key+1]) && $calls[$key+1][0] == 'eol' ) {
-
-                            if ( $this->inParagraph ) {
-                                //$this->calls[] = array('p_close',array(), $call[2]);
-                                $this->closeParagraph($call[2]);
-                            }
-
-                            $this->calls[] = array('p_open',array(), $call[2]);
-                            $this->inParagraph = TRUE;
-
-
-                            // Mark the next instruction for skipping
-                            $this->skipEolKey = $key+1;
-
-                        }else{
-                            //if this is just a single eol make a space from it
-                            $this->calls[] = array('cdata',array(" "), $call[2]);
-                        }
-                    }
-
-
-                } else {
-
-                    $storeCall = TRUE;
-                    if ( $this->inParagraph && (in_array($cname, $this->blockOpen) && (!$plugin || $plugin_open))) {
+            if ( in_array($cname,$this->stackOpen ) && (!$plugin || $plugin_open) ) {
+                $this->closeParagraph($call[2]);
+                $this->storeCall($call);
+                $this->openParagraph($call[2]);
+                continue;
+            }
+            /* block */
+            // If it's a substition it opens and closes at the same call.
+            // To make sure next paragraph is correctly started, let close go first.
+            if ( in_array($cname, $this->blockClose) && (!$plugin || $plugin_close)) {
+                $this->closeParagraph($call[2]);
+                $this->storeCall($call);
+                $this->openParagraph($call[2]);
+                continue;
+            }
+            if ( in_array($cname, $this->blockOpen) && (!$plugin || $plugin_open)) {
+                $this->closeParagraph($call[2]);
+                $this->storeCall($call);
+                continue;
+            }
+            /* eol */
+            if ( $cname == 'eol' ) {
+                // Check this isn't an eol instruction to skip...
+                if ( !$this->skipEol ) {
+                    // Next is EOL => double eol => mark as paragraph
+                    if ( isset($calls[$key+1]) && $calls[$key+1][0] == 'eol' ) {
                         $this->closeParagraph($call[2]);
-                        $this->calls[] = $call;
-                        $storeCall = FALSE;
+                        $this->openParagraph($call[2]);
+                    } else {
+                        //if this is just a single eol make a space from it
+                        $this->addCall(array('cdata',array(DOKU_PARSER_EOL), $call[2]));
                     }
-
-                    if ( in_array($cname, $this->blockClose) && (!$plugin || $plugin_close)) {
-                        if ( $this->inParagraph ) {
-                            $this->closeParagraph($call[2]);
-                        }
-                        if ( $storeCall ) {
-                            $this->calls[] = $call;
-                            $storeCall = FALSE;
-                        }
-
-                        // This really sucks and suggests this whole class sucks but...
-                        if ( isset($calls[$key+1])) {
-                            $cname_plusone = $calls[$key+1][0];
-                            if ($cname_plusone == 'plugin') {
-                                $cname_plusone = 'plugin'.$calls[$key+1][1][0];
-                                
-                                // plugin test, true if plugin has a state which precludes it requiring blockOpen or blockClose
-                                $plugin_plusone = true;
-                                $plugin_test = ($call[$key+1][1][2] == DOKU_LEXER_MATCHED) || ($call[$key+1][1][2] == DOKU_LEXER_MATCHED);
-                            } else {
-                                $plugin_plusone = false;
-                            }
-                            if ((!in_array($cname_plusone, $this->blockOpen) && !in_array($cname_plusone, $this->blockClose)) ||
-                                ($plugin_plusone && $plugin_test)
-                                ) {
-
-                                $this->calls[] = array('p_open',array(), $call[2]);
-                                $this->inParagraph = TRUE;
-                            }
-                        }
-                    }
-
-                    if ( $storeCall ) {
-                        $this->calls[] = $call;
-                    }
-
                 }
-
-
-            } else {
-
-                // Unless there's already a block at the start, start a paragraph
-                if ( !in_array($cname,$this->blockOpen) ) {
-                    $this->calls[] = array('p_open',array(), $call[2]);
-                    if ( $call[0] != 'eol' ) {
-                        $this->calls[] = $call;
-                    }
-                    $this->atStart = FALSE;
-                    $this->inParagraph = TRUE;
-                } else {
-                    $this->calls[] = $call;
-                    $this->atStart = FALSE;
-                }
-
+                continue;
             }
-
+            /* normal */
+            $this->addCall($call);
+            $this->skipEol = false;
         }
-
-        if ( $this->inParagraph ) {
-            if ( $cname == 'p_open' ) {
-                // Ditch the last call
-                array_pop($this->calls);
-            } else if ( !in_array($cname, $this->blockClose) ) {
-                //$this->calls[] = array('p_close',array(), $call[2]);
-                $this->closeParagraph($call[2]);
-            } else {
-                $last_call = array_pop($this->calls);
-                //$this->calls[] = array('p_close',array(), $call[2]);
-                $this->closeParagraph($call[2]);
-                $this->calls[] = $last_call;
-            }
-        }
-
+        // close last paragraph
+        $call = end($this->calls);
+        $this->closeParagraph($call[2]);
         return $this->calls;
-    }
-
-    function addToStack($newStart = TRUE) {
-        $this->blockStack[] = array($this->atStart, $this->inParagraph);
-        $this->atStart = $newStart;
-        $this->inParagraph = FALSE;
-    }
-
-    function removeFromStack() {
-        $state = array_pop($this->blockStack);
-        $this->atStart = $state[0];
-        $this->inParagraph = $state[1];
     }
 }
 
-//Setup VIM: ex: et ts=4 enc=utf-8 :
+//Setup VIM: ex: et ts=4 :

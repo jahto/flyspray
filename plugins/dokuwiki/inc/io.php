@@ -6,11 +6,7 @@
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
 
-  if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../').'/');
-  require_once(DOKU_INC.'inc/common.php');
-  require_once(DOKU_INC.'inc/HTTPClient.php');
-  require_once(DOKU_INC.'inc/events.php');
-  require_once(DOKU_INC.'inc/utf8.php');
+if(!defined('DOKU_INC')) die('meh.');
 
 /**
  * Removes empty directories
@@ -21,26 +17,33 @@
  * $data[1]    ns_type: 'pages' or 'media' namespace tree.
  *
  * @todo use safemode hack
+ * @param string $id      - a pageid, the namespace of that id will be tried to deleted
+ * @param string $basedir - the config name of the type to delete (datadir or mediadir usally)
+ * @return bool - true if at least one namespace was deleted
  * @author  Andreas Gohr <andi@splitbrain.org>
  * @author Ben Coburn <btcoburn@silicodon.net>
  */
 function io_sweepNS($id,$basedir='datadir'){
-  global $conf;
-  $types = array ('datadir'=>'pages', 'mediadir'=>'media');
-  $ns_type = (isset($types[$basedir])?$types[$basedir]:false);
+    global $conf;
+    $types = array ('datadir'=>'pages', 'mediadir'=>'media');
+    $ns_type = (isset($types[$basedir])?$types[$basedir]:false);
 
-  //scan all namespaces
-  while(($id = getNS($id)) !== false){
-    $dir = $conf[$basedir].'/'.utf8_encodeFN(str_replace(':','/',$id));
+    $delone = false;
 
-    //try to delete dir else return
-    if(@rmdir($dir)) {
-      if ($ns_type!==false) {
-        $data = array($id, $ns_type);
-        trigger_event('IO_NAMESPACE_DELETED', $data);
-      }
-    } else { return; }
-  }
+    //scan all namespaces
+    while(($id = getNS($id)) !== false){
+        $dir = $conf[$basedir].'/'.utf8_encodeFN(str_replace(':','/',$id));
+
+        //try to delete dir else return
+        if(@rmdir($dir)) {
+            if ($ns_type!==false) {
+                $data = array($id, $ns_type);
+                $delone = true; // we deleted at least one dir
+                trigger_event('IO_NAMESPACE_DELETED', $data);
+            }
+        } else { return $delone; }
+    }
+    return $delone;
 }
 
 /**
@@ -60,7 +63,7 @@ function io_sweepNS($id,$basedir='datadir'){
  */
 function io_readWikiPage($file, $id, $rev=false) {
     if (empty($rev)) { $rev = false; }
-    $data = array(array($file, false), getNS($id), noNS($id), $rev);
+    $data = array(array($file, true), getNS($id), noNS($id), $rev);
     return trigger_event('IO_WIKIPAGE_READ', $data, '_io_readWikiPage_action', false);
 }
 
@@ -87,35 +90,36 @@ function _io_readWikiPage_action($data) {
  * @author  Andreas Gohr <andi@splitbrain.org>
  */
 function io_readFile($file,$clean=true){
-  $ret = '';
-  if(@file_exists($file)){
-    if(substr($file,-3) == '.gz'){
-      $ret = join('',gzfile($file));
-    }else if(substr($file,-4) == '.bz2'){
-      $ret = bzfile($file);
-    }else{
-      $ret = join('',file($file));
+    $ret = '';
+    if(@file_exists($file)){
+        if(substr($file,-3) == '.gz'){
+            $ret = join('',gzfile($file));
+        }else if(substr($file,-4) == '.bz2'){
+            $ret = bzfile($file);
+        }else{
+            $ret = file_get_contents($file);
+        }
     }
-  }
-  if($clean){
-    return cleanText($ret);
-  }else{
-    return $ret;
-  }
+    if($clean){
+        return cleanText($ret);
+    }else{
+        return $ret;
+    }
 }
 /**
-* Returns the content of a .bz2 compressed file as string
-* @author marcel senf <marcel@rucksackreinigung.de>
-*/
+ * Returns the content of a .bz2 compressed file as string
+ * @author marcel senf <marcel@rucksackreinigung.de>
+ */
 
 function bzfile($file){
-  $bz = bzopen($file,"r");
-  while (!feof($bz)){
-    //8192 seems to be the maximum buffersize?
-	  $str = $str . bzread($bz,8192);
-  }
-  bzclose($bz);
-  return $str;
+    $bz = bzopen($file,"r");
+    $str = '';
+    while (!feof($bz)){
+        //8192 seems to be the maximum buffersize?
+        $str = $str . bzread($bz,8192);
+    }
+    bzclose($bz);
+    return $str;
 }
 
 
@@ -167,44 +171,44 @@ function _io_writeWikiPage_action($data) {
  * @return bool true on success
  */
 function io_saveFile($file,$content,$append=false){
-  global $conf;
-  $mode = ($append) ? 'ab' : 'wb';
+    global $conf;
+    $mode = ($append) ? 'ab' : 'wb';
 
-  $fileexists = @file_exists($file);
-  io_makeFileDir($file);
-  io_lock($file);
-  if(substr($file,-3) == '.gz'){
-    $fh = @gzopen($file,$mode.'9');
-    if(!$fh){
-      msg("Writing $file failed",-1);
-      io_unlock($file);
-      return false;
+    $fileexists = @file_exists($file);
+    io_makeFileDir($file);
+    io_lock($file);
+    if(substr($file,-3) == '.gz'){
+        $fh = @gzopen($file,$mode.'9');
+        if(!$fh){
+            msg("Writing $file failed",-1);
+            io_unlock($file);
+            return false;
+        }
+        gzwrite($fh, $content);
+        gzclose($fh);
+    }else if(substr($file,-4) == '.bz2'){
+        $fh = @bzopen($file,$mode{0});
+        if(!$fh){
+            msg("Writing $file failed", -1);
+            io_unlock($file);
+            return false;
+        }
+        bzwrite($fh, $content);
+        bzclose($fh);
+    }else{
+        $fh = @fopen($file,$mode);
+        if(!$fh){
+            msg("Writing $file failed",-1);
+            io_unlock($file);
+            return false;
+        }
+        fwrite($fh, $content);
+        fclose($fh);
     }
-    gzwrite($fh, $content);
-    gzclose($fh);
-  }else if(substr($file,-4) == '.bz2'){
-    $fh = @bzopen($file,$mode);
-    if(!$fh){
-      msg("Writing $file failed", -1);
-      io_unlock($file);
-      return false;
-    }
-    bzwrite($fh, $content);
-    bzclose($fh);
-  }else{
-    $fh = @fopen($file,$mode);
-    if(!$fh){
-      msg("Writing $file failed",-1);
-      io_unlock($file);
-      return false;
-    }
-    fwrite($fh, $content);
-    fclose($fh);
-  }
 
-  if(!$fileexists and !empty($conf['fperm'])) chmod($file, $conf['fperm']);
-  io_unlock($file);
-  return true;
+    if(!$fileexists and !empty($conf['fperm'])) chmod($file, $conf['fperm']);
+    io_unlock($file);
+    return true;
 }
 
 /**
@@ -220,55 +224,55 @@ function io_saveFile($file,$content,$append=false){
  * @return bool true on success
  */
 function io_deleteFromFile($file,$badline,$regex=false){
-  if (!@file_exists($file)) return true;
+    if (!@file_exists($file)) return true;
 
-  io_lock($file);
+    io_lock($file);
 
-  // load into array
-  if(substr($file,-3) == '.gz'){
-    $lines = gzfile($file);
-  }else{
-    $lines = file($file);
-  }
-
-  // remove all matching lines
-  if ($regex) {
-    $lines = preg_grep($badline,$lines,PREG_GREP_INVERT);
-  } else {
-    $pos = array_search($badline,$lines); //return null or false if not found
-    while(is_int($pos)){
-      unset($lines[$pos]);
-      $pos = array_search($badline,$lines);
-    }
-  }
-
-  if(count($lines)){
-    $content = join('',$lines);
+    // load into array
     if(substr($file,-3) == '.gz'){
-      $fh = @gzopen($file,'wb9');
-      if(!$fh){
-        msg("Removing content from $file failed",-1);
-        io_unlock($file);
-        return false;
-      }
-      gzwrite($fh, $content);
-      gzclose($fh);
+        $lines = gzfile($file);
     }else{
-      $fh = @fopen($file,'wb');
-      if(!$fh){
-        msg("Removing content from $file failed",-1);
-        io_unlock($file);
-        return false;
-      }
-      fwrite($fh, $content);
-      fclose($fh);
+        $lines = file($file);
     }
-  }else{
-    @unlink($file);
-  }
 
-  io_unlock($file);
-  return true;
+    // remove all matching lines
+    if ($regex) {
+        $lines = preg_grep($badline,$lines,PREG_GREP_INVERT);
+    } else {
+        $pos = array_search($badline,$lines); //return null or false if not found
+        while(is_int($pos)){
+            unset($lines[$pos]);
+            $pos = array_search($badline,$lines);
+        }
+    }
+
+    if(count($lines)){
+        $content = join('',$lines);
+        if(substr($file,-3) == '.gz'){
+            $fh = @gzopen($file,'wb9');
+            if(!$fh){
+                msg("Removing content from $file failed",-1);
+                io_unlock($file);
+                return false;
+            }
+            gzwrite($fh, $content);
+            gzclose($fh);
+        }else{
+            $fh = @fopen($file,'wb');
+            if(!$fh){
+                msg("Removing content from $file failed",-1);
+                io_unlock($file);
+                return false;
+            }
+            fwrite($fh, $content);
+            fclose($fh);
+        }
+    }else{
+        @unlink($file);
+    }
+
+    io_unlock($file);
+    return true;
 }
 
 /**
@@ -283,24 +287,24 @@ function io_deleteFromFile($file,$badline,$regex=false){
  * @author Andreas Gohr <andi@splitbrain.org>
  */
 function io_lock($file){
-  global $conf;
-  // no locking if safemode hack
-  if($conf['safemodehack']) return;
+    global $conf;
+    // no locking if safemode hack
+    if($conf['safemodehack']) return;
 
-  $lockDir = $conf['lockdir'].'/'.md5($file);
-  @ignore_user_abort(1);
+    $lockDir = $conf['lockdir'].'/'.md5($file);
+    @ignore_user_abort(1);
 
-  $timeStart = time();
-  do {
-    //waited longer than 3 seconds? -> stale lock
-    if ((time() - $timeStart) > 3) break;
-    $locked = @mkdir($lockDir, $conf['dmode']);
-    if($locked){
-      if(!empty($conf['dperm'])) chmod($lockDir, $conf['dperm']);
-      break;
-    }
-    usleep(50);
-  } while ($locked === false);
+    $timeStart = time();
+    do {
+        //waited longer than 3 seconds? -> stale lock
+        if ((time() - $timeStart) > 3) break;
+        $locked = @mkdir($lockDir, $conf['dmode']);
+        if($locked){
+            if(!empty($conf['dperm'])) chmod($lockDir, $conf['dperm']);
+            break;
+        }
+        usleep(50);
+    } while ($locked === false);
 }
 
 /**
@@ -309,13 +313,13 @@ function io_lock($file){
  * @author Andreas Gohr <andi@splitbrain.org>
  */
 function io_unlock($file){
-  global $conf;
-  // no locking if safemode hack
-  if($conf['safemodehack']) return;
+    global $conf;
+    // no locking if safemode hack
+    if($conf['safemodehack']) return;
 
-  $lockDir = $conf['lockdir'].'/'.md5($file);
-  @rmdir($lockDir);
-  @ignore_user_abort(0);
+    $lockDir = $conf['lockdir'].'/'.md5($file);
+    @rmdir($lockDir);
+    @ignore_user_abort(0);
 }
 
 /**
@@ -363,12 +367,10 @@ function io_createNamespace($id, $ns_type='pages') {
  * @author  Andreas Gohr <andi@splitbrain.org>
  */
 function io_makeFileDir($file){
-  global $conf;
-
-  $dir = dirname($file);
-  if(!@is_dir($dir)){
-    io_mkdir_p($dir) || msg("Creating directory $dir failed",-1);
-  }
+    $dir = dirname($file);
+    if(!@is_dir($dir)){
+        io_mkdir_p($dir) || msg("Creating directory $dir failed",-1);
+    }
 }
 
 /**
@@ -379,21 +381,71 @@ function io_makeFileDir($file){
  * @author  Andreas Gohr <andi@splitbrain.org>
  */
 function io_mkdir_p($target){
-  global $conf;
-  if (@is_dir($target)||empty($target)) return 1; // best case check first
-  if (@file_exists($target) && !is_dir($target)) return 0;
-  //recursion
-  if (io_mkdir_p(substr($target,0,strrpos($target,'/')))){
-    if($conf['safemodehack']){
-      $dir = preg_replace('/^'.preg_quote(realpath($conf['ftp']['root']),'/').'/','', $target);
-      return io_mkdir_ftp($dir);
-    }else{
-      $ret = @mkdir($target,$conf['dmode']); // crawl back up & create dir tree
-      if($ret && $conf['dperm']) chmod($target, $conf['dperm']);
-      return $ret;
+    global $conf;
+    if (@is_dir($target)||empty($target)) return 1; // best case check first
+    if (@file_exists($target) && !is_dir($target)) return 0;
+    //recursion
+    if (io_mkdir_p(substr($target,0,strrpos($target,'/')))){
+        if($conf['safemodehack']){
+            $dir = preg_replace('/^'.preg_quote(fullpath($conf['ftp']['root']),'/').'/','', $target);
+            return io_mkdir_ftp($dir);
+        }else{
+            $ret = @mkdir($target,$conf['dmode']); // crawl back up & create dir tree
+            if($ret && !empty($conf['dperm'])) chmod($target, $conf['dperm']);
+            return $ret;
+        }
     }
-  }
-  return 0;
+    return 0;
+}
+
+/**
+ * Recursively delete a directory
+ *
+ * @author Andreas Gohr <andi@splitbrain.org>
+ * @param string $path
+ * @param bool   $removefiles defaults to false which will delete empty directories only
+ * @return bool
+ */
+function io_rmdir($path, $removefiles = false) {
+    if(!is_string($path) || $path == "") return false;
+    if(!file_exists($path)) return true; // it's already gone or was never there, count as success
+
+    if(is_dir($path) && !is_link($path)) {
+        $dirs  = array();
+        $files = array();
+
+        if(!$dh = @opendir($path)) return false;
+        while(false !== ($f = readdir($dh))) {
+            if($f == '..' || $f == '.') continue;
+
+            // collect dirs and files first
+            if(is_dir("$path/$f") && !is_link("$path/$f")) {
+                $dirs[] = "$path/$f";
+            } else if($removefiles) {
+                $files[] = "$path/$f";
+            } else {
+                return false; // abort when non empty
+            }
+
+        }
+        closedir($dh);
+
+        // now traverse into  directories first
+        foreach($dirs as $dir) {
+            if(!io_rmdir($dir, $removefiles)) return false; // abort on any error
+        }
+
+        // now delete files
+        foreach($files as $file) {
+            if(!@unlink($file)) return false; //abort on any error
+        }
+
+        // remove self
+        return @rmdir($path);
+    } else if($removefiles) {
+        return @unlink($path);
+    }
+    return false;
 }
 
 /**
@@ -404,31 +456,51 @@ function io_mkdir_p($target){
  * @author <andi@splitbrain.org>
  */
 function io_mkdir_ftp($dir){
-  global $conf;
+    global $conf;
 
-  if(!function_exists('ftp_connect')){
-    msg("FTP support not found - safemode workaround not usable",-1);
-    return false;
-  }
+    if(!function_exists('ftp_connect')){
+        msg("FTP support not found - safemode workaround not usable",-1);
+        return false;
+    }
 
-  $conn = @ftp_connect($conf['ftp']['host'],$conf['ftp']['port'],10);
-  if(!$conn){
-    msg("FTP connection failed",-1);
-    return false;
-  }
+    $conn = @ftp_connect($conf['ftp']['host'],$conf['ftp']['port'],10);
+    if(!$conn){
+        msg("FTP connection failed",-1);
+        return false;
+    }
 
-  if(!@ftp_login($conn, $conf['ftp']['user'], $conf['ftp']['pass'])){
-    msg("FTP login failed",-1);
-    return false;
-  }
+    if(!@ftp_login($conn, $conf['ftp']['user'], conf_decodeString($conf['ftp']['pass']))){
+        msg("FTP login failed",-1);
+        return false;
+    }
 
-  //create directory
-  $ok = @ftp_mkdir($conn, $dir);
-  //set permissions
-  @ftp_site($conn,sprintf("CHMOD %04o %s",$conf['dmode'],$dir));
+    //create directory
+    $ok = @ftp_mkdir($conn, $dir);
+    //set permissions
+    @ftp_site($conn,sprintf("CHMOD %04o %s",$conf['dmode'],$dir));
 
-  @ftp_close($conn);
-  return $ok;
+    @ftp_close($conn);
+    return $ok;
+}
+
+/**
+ * Creates a unique temporary directory and returns
+ * its path.
+ *
+ * @author Michael Klier <chi@chimeric.de>
+ */
+function io_mktmpdir() {
+    global $conf;
+
+    $base = $conf['tmpdir'];
+    $dir  = md5(uniqid(mt_rand(), true));
+    $tmpdir = $base.'/'.$dir;
+
+    if(io_mkdir_p($tmpdir)) {
+        return($tmpdir);
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -437,7 +509,7 @@ function io_mkdir_ftp($dir){
  * if $useAttachment is false,
  * - $file is the full filename to save the file, incl. path
  * - if successful will return true, false otherwise
-
+ *
  * if $useAttachment is true,
  * - $file is the directory where the file should be saved
  * - if successful will return the name used for the saved file, false otherwise
@@ -446,43 +518,44 @@ function io_mkdir_ftp($dir){
  * @author Chris Smith <chris@jalakai.co.uk>
  */
 function io_download($url,$file,$useAttachment=false,$defaultName='',$maxSize=2097152){
-  global $conf;
-  $http = new DokuHTTPClient();
-  $http->max_bodysize = $maxSize;
-  $http->timeout = 25; //max. 25 sec
+    global $conf;
+    $http = new DokuHTTPClient();
+    $http->max_bodysize = $maxSize;
+    $http->timeout = 25; //max. 25 sec
+    $http->keep_alive = false; // we do single ops here, no need for keep-alive
 
-  $data = $http->get($url);
-  if(!$data) return false;
+    $data = $http->get($url);
+    if(!$data) return false;
 
-  if ($useAttachment) {
     $name = '';
-      if (isset($http->resp_headers['content-disposition'])) {
-      $content_disposition = $http->resp_headers['content-disposition'];
-      $match=array();
-      if (is_string($content_disposition) &&
-          preg_match('/attachment;\s*filename\s*=\s*"([^"]*)"/i', $content_disposition, $match)) {
+    if ($useAttachment) {
+        if (isset($http->resp_headers['content-disposition'])) {
+            $content_disposition = $http->resp_headers['content-disposition'];
+            $match=array();
+            if (is_string($content_disposition) &&
+                    preg_match('/attachment;\s*filename\s*=\s*"([^"]*)"/i', $content_disposition, $match)) {
 
-          $name = basename($match[1]);
-      }
+                $name = utf8_basename($match[1]);
+            }
 
+        }
+
+        if (!$name) {
+            if (!$defaultName) return false;
+            $name = $defaultName;
+        }
+
+        $file = $file.$name;
     }
 
-    if (!$name) {
-        if (!$defaultName) return false;
-        $name = $defaultName;
-    }
-
-    $file = $file.$name;
-  }
-
-  $fileexists = @file_exists($file);
-  $fp = @fopen($file,"w");
-  if(!$fp) return false;
-  fwrite($fp,$data);
-  fclose($fp);
-  if(!$fileexists and $conf['fperm']) chmod($file, $conf['fperm']);
-  if ($useAttachment) return $name;
-  return true;
+    $fileexists = @file_exists($file);
+    $fp = @fopen($file,"w");
+    if(!$fp) return false;
+    fwrite($fp,$data);
+    fclose($fp);
+    if(!$fileexists and $conf['fperm']) chmod($file, $conf['fperm']);
+    if ($useAttachment) return $name;
+    return true;
 }
 
 /**
@@ -492,35 +565,37 @@ function io_download($url,$file,$useAttachment=false,$defaultName='',$maxSize=20
  * this function will use copy/unlink instead
  */
 function io_rename($from,$to){
-  global $conf;
-  if(!@rename($from,$to)){
-    if(@copy($from,$to)){
-      if($conf['fperm']) chmod($to, $conf['fperm']);
-      @unlink($from);
-      return true;
+    global $conf;
+    if(!@rename($from,$to)){
+        if(@copy($from,$to)){
+            if($conf['fperm']) chmod($to, $conf['fperm']);
+            @unlink($from);
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
-  return true;
+    return true;
 }
 
-
 /**
- * Runs an external command and returns it's output as string
+ * Runs an external command with input and output pipes.
+ * Returns the exit code from the process.
  *
- * @author Harry Brueckner <harry_b@eml.cc>
- * @author Andreas Gohr <andi@splitbrain.org>
- * @deprecated
+ * @author Tom N Harris <tnharris@whoopdedo.org>
  */
-function io_runcmd($cmd){
-  $fh = popen($cmd, "r");
-  if(!$fh) return false;
-  $ret = '';
-  while (!feof($fh)) {
-    $ret .= fread($fh, 8192);
-  }
-  pclose($fh);
-  return $ret;
+function io_exec($cmd, $input, &$output){
+    $descspec = array(
+            0=>array("pipe","r"),
+            1=>array("pipe","w"),
+            2=>array("pipe","w"));
+    $ph = proc_open($cmd, $descspec, $pipes);
+    if(!$ph) return -1;
+    fclose($pipes[2]); // ignore stderr
+    fwrite($pipes[0], $input);
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    return proc_close($ph);
 }
 
 /**
@@ -534,34 +609,33 @@ function io_runcmd($cmd){
  * @param  string $file    The file to search
  * @param  string $pattern PCRE pattern
  * @param  int    $max     How many lines to return (0 for all)
- * @param  bool   $baxkref When true returns array with backreferences instead of lines
- * @return matching lines or backref, false on error
+ * @param  bool   $backref When true returns array with backreferences instead of lines
+ * @return array matching lines or backref, false on error
  */
 function io_grep($file,$pattern,$max=0,$backref=false){
-  $fh = @fopen($file,'r');
-  if(!$fh) return false;
-  $matches = array();
+    $fh = @fopen($file,'r');
+    if(!$fh) return false;
+    $matches = array();
 
-  $cnt  = 0;
-  $line = '';
-  while (!feof($fh)) {
-    $line .= fgets($fh, 4096);  // read full line
-    if(substr($line,-1) != "\n") continue;
-
-    // check if line matches
-    if(preg_match($pattern,$line,$match)){
-      if($backref){
-        $matches[] = $match;
-      }else{
-        $matches[] = $line;
-      }
-      $cnt++;
-    }
-    if($max && $max == $cnt) break;
+    $cnt  = 0;
     $line = '';
-  }
-  fclose($fh);
-  return $matches;
+    while (!feof($fh)) {
+        $line .= fgets($fh, 4096);  // read full line
+        if(substr($line,-1) != "\n") continue;
+
+        // check if line matches
+        if(preg_match($pattern,$line,$match)){
+            if($backref){
+                $matches[] = $match;
+            }else{
+                $matches[] = $line;
+            }
+            $cnt++;
+        }
+        if($max && $max == $cnt) break;
+        $line = '';
+    }
+    fclose($fh);
+    return $matches;
 }
 
-//Setup VIM: ex: et ts=2 enc=utf-8 :
