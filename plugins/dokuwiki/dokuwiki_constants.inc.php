@@ -6,4 +6,5 @@ define('DOKU_CONF',          BASEDIR . '/plugins/dokuwiki/conf/');
 define('DOKU_INTERNAL_LINK', $conf['general']['doku_url']);
 define('DOKU_BASE',          $baseurl .'plugins/dokuwiki/');
 define('DOKU_URL',           BASEDIR .'/plugins/dokuwiki/');
+define('DOKU_INC',           BASEDIR .'/plugins/dokuwiki/');
 ?>

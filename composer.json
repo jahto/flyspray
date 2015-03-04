@@ -18,7 +18,7 @@
         }
     ],
     "autoload": {
-        "classmap": ["includes"],
+        "classmap": ["includes", "plugins/dokuwiki"],
         "files": ["includes/utf8.inc.php"],
         "psr-4": {
             "Flyspray\\": "src/"
