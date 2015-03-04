@@ -12,7 +12,7 @@ class dokuwiki_TextFormatter
         $conf = array();
 
         // Dokuwiki generates some notices
-        error_reporting(E_ALL ^ E_NOTICE);
+        error_reporting(E_ALL  & ~E_STRICT);
         if (!$instructions) {
             include_once(BASEDIR . '/plugins/dokuwiki/inc/parser/parser.php');
         }
