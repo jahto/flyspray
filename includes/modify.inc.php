@@ -181,9 +181,27 @@ switch ($action = Req::val('action'))
         }
 
         $estimated_effort = 0;
-        if (($estimated_effort = effort::EditStringToSeconds(Post::val('estimated_effort'), $proj->prefs['hours_per_manday'], $proj->prefs['effort_format'])) === FALSE) {
+        if (($estimated_effort = effort::EditStringToSeconds(Post::val('estimated_effort'), $proj->prefs['hours_per_manday'], $proj->prefs['estimated_effort_format'])) === FALSE) {
             Flyspray::show_error(L('invalideffort'));
             break;
+        }
+
+        // Check that a task is not moved to a different project than its
+        // possible parent or subtasks. Note that even closed tasks are
+        // included in the result, a task can be always reopened later.
+        $result = $db->Query('SELECT p.task_id parent_id, p.project_id project, s.task_id sub_id
+                             FROM {tasks} p
+                        LEFT JOIN {tasks} s ON p.task_id = s.supertask_id
+                            WHERE p.task_id = ? OR s.task_id = ?',
+                array($task['task_id'], $task['task_id']));
+        $check = $db->fetchRow($result);
+
+        // if there are any subtasks or a parent, check that the project is not changed.
+        if ($check && $check['sub_id']) {
+            if ($check['project'] != Post::val('project_id')) {
+                Flyspray::show_error(L('movingtodifferentproject'));
+                break;
+            }
         }
 
         $time = time();
@@ -297,33 +315,39 @@ switch ($action = Req::val('action'))
         break;
 
     case 'details.associatesubtask':
-
-        //check to see if associated subtask already has a parent task
-
-
-        //check to see if associated subtask is already the parent of this task
-        $sql = $db->Query("SELECT supertask_id FROM {tasks} WHERE task_id = ?",
+        $sql = $db->Query("SELECT supertask_id, project_id FROM {tasks} WHERE task_id = ?",
             array(Post::val('associate_subtask_id')));
 
         $suptask = $db->FetchRow($sql);
 
+        // check to see if the subtask exists.
+        if (!$suptask) {
+            Flyspray::show_error(L('subtasknotexist'));
+            break;
+        }
+
+        // check to see if associated subtask is already the parent of this task
         if ($suptask['supertask_id'] == Post::val('associate_subtask_id')) {
             Flyspray::show_error(L('subtaskisparent'));
             break;
         }
 
-        //check to see if the subtask exists.
-        $sql = $db->Query('SELECT COUNT(*) FROM {tasks}
-                           WHERE  task_id = '.Post::val("associate_subtask_id").';');
+        // check to see if associated subtask already has a parent task
+        if ($suptask['supertask_id']) {
+            Flyspray::show_error(L('subtaskalreadyhasparent'));
+            break;
+        }
 
-        if (!$db->fetchOne($sql)) {
-            Flyspray::show_error(L('subtasknotexist'));
+        // check to see that both tasks belong to the same project
+        if ($task['project_id'] != $suptask['project_id']) {
+            Flyspray::show_error(L('musthavesameproject'));
             break;
         }
 
         //associate the subtask
         $db->query('UPDATE {tasks} SET supertask_id=? WHERE task_id=?',array(Post::val("task_id"),Post::val("associate_subtask_id")));
-
+        Flyspray::logEvent($task['task_id'], 32, Post::val("associate_subtask_id"));
+        Flyspray::logEvent(Post::val("associate_subtask_id"), 34, $task['task_id']);
 
         $_SESSION['SUCCESS'] = L('associatedsubtask').Post::val('associate_subtask_id');
         break;
@@ -474,7 +498,7 @@ switch ($action = Req::val('action'))
         // Remove doubled up spaces and control chars
         $real_name = preg_replace('![\x00-\x1f\s]+!u', ' ', $real_name);
 
-        if (!$user_name || !$real_name) {
+        if (!$user_name || empty($user_name) || !$real_name) {
             Flyspray::show_error(L('entervalidusername'));
             break;
         }
@@ -848,7 +872,7 @@ switch ($action = Req::val('action'))
                         'delete_attachments', 'view_history', 'close_own_tasks',
                         'close_other_tasks', 'assign_to_self', 'show_as_assignees',
                         'assign_others_to_self', 'add_to_assignees', 'view_reports', 'group_open',
-                        'view_effort', 'track_effort', 'view_actual_effort', 'add_multiple_tasks', 'view_roadmap');
+                        'view_estimated_effort', 'track_effort', 'view_current_effort_done', 'add_multiple_tasks', 'view_roadmap');
 
                 $params = array_map('Post_to0',$cols);
                 array_unshift($params, $proj->id);
@@ -877,7 +901,7 @@ switch ($action = Req::val('action'))
                 'dateformat_extended', 'anon_reg', 'global_theme', 'smtp_server', 'page_title',
 			    'smtp_user', 'smtp_pass', 'funky_urls', 'reminder_daemon','cache_feeds', 'intro_message',
                 'disable_lostpw','disable_changepw','days_before_alert', 'emailNoHTML', 'need_approval', 'pages_welcome_msg',
-                'active_oauths', 'only_oauth_reg', 'enable_avatars', 'max_avatar_size');
+                'active_oauths', 'only_oauth_reg', 'enable_avatars', 'max_avatar_size', 'default_order_by');
         if(Post::val('need_approval') == '1' && Post::val('spam_proof'))
             unset($_POST['spam_proof']);//if self register request admin to approve, disable spam_proof
         //if you think different, modify functions in class.user.php directing different regiser tpl
@@ -1021,7 +1045,7 @@ switch ($action = Req::val('action'))
         $cols = array( 'project_title', 'theme_style', 'lang_code', 'default_task', 'default_entry',
                 'intro_message', 'notify_email', 'notify_jabber', 'notify_subject', 'notify_reply',
                 'feed_description', 'feed_img_url','default_due_version','use_effort_tracking',
-                'pages_intro_msg', 'effort_format', 'actual_effort_format');
+                'pages_intro_msg', 'estimated_effort_format', 'current_effort_done_format', 'default_order_by');
         $args = array_map('Post_to0', $cols);
         $cols = array_merge($cols, $ints = array('project_is_active', 'others_view', 'anon_open', 'comment_closed', 'auto_assign'));
         $args = array_merge($args, array_map(array('Post', 'num'), $ints));
@@ -1036,7 +1060,7 @@ switch ($action = Req::val('action'))
 
         // Convert to seconds.
         if (Post::val('hours_per_manday')) {
-            $args[] = effort::EditStringToSeconds(Post::val('hours_per_manday'), $proj->prefs['hours_per_manday'], $proj->prefs['effort_format']);
+            $args[] = effort::EditStringToSeconds(Post::val('hours_per_manday'), $proj->prefs['hours_per_manday'], $proj->prefs['estimated_effort_format']);
             $cols[] = 'hours_per_manday';
         }
 
@@ -1063,15 +1087,21 @@ switch ($action = Req::val('action'))
     case 'admin.edituser':
     case 'myprofile.edituser':
         if (Post::val('delete_user')) {
-            // check that he is not the last user
-            $sql = $db->Query('SELECT count(*) FROM {users}');
-            if ($db->FetchOne($sql) > 1) {
-                Backend::delete_user(Post::val('user_id'));
-                $_SESSION['SUCCESS'] = L('userdeleted');
-                Flyspray::Redirect(CreateURL('admin', 'groups'));
-            } else {
-                Flyspray::show_error(L('lastuser'));
+            if ($user->id == (int)Post::val('user_id') && $user->perms('is_admin')) {
+                Flyspray::show_error(L('nosuicide'));
                 break;
+            }
+            else {
+                // check that he is not the last user
+                $sql = $db->Query('SELECT count(*) FROM {users}');
+                if ($db->FetchOne($sql) > 1) {
+                    Backend::delete_user(Post::val('user_id'));
+                    $_SESSION['SUCCESS'] = L('userdeleted');
+                    Flyspray::Redirect(CreateURL('admin', 'groups'));
+                } else {
+                    Flyspray::show_error(L('lastuser'));
+                    break;
+                }
             }
         }
 
@@ -1134,7 +1164,7 @@ switch ($action = Req::val('action'))
                     Notifications::JabberRequestAuth(Post::val('jabber_id'));
                 }
 
-                $db->Query('UPDATE  {users}
+                $db->Query('UPDATE {users}
                        SET  real_name = ?, email_address = ?, notify_own = ?,
                             jabber_id = ?, notify_type = ?,
                             dateformat = ?, dateformat_extended = ?,
@@ -1145,6 +1175,11 @@ switch ($action = Req::val('action'))
                     Post::val('dateformat', 0), Post::val('dateformat_extended', 0),
                     Post::num('tasks_perpage'), Post::num('time_zone'), Post::val('lang_code', 'en'),
                     Post::num('hide_my_email', 0), Post::num('user_id')));
+
+                # 20150307 peterdd: Now we must reload translations, because the user maybe changed his language preferences!
+                # first reload user info
+                $user=new User($user->id);
+                load_translations();
 
                 $profile_image = 'profile_image';
 
@@ -1180,12 +1215,18 @@ switch ($action = Req::val('action'))
                 endif; // end only admin or user himself can change
 
             if ($user->perms('is_admin')) {
-                $db->Query('UPDATE {users} SET account_enabled = ?  WHERE user_id = ?',
+                if($user->id == (int)Post::val('user_id')) {
+                    if (Post::val('account_enabled', 0) <= 0 || Post::val('old_global_id') != 1) {
+                        Flyspray::show_error(L('nosuicide'));
+                        break;
+                    }
+                } else {
+                    $db->Query('UPDATE {users} SET account_enabled = ?  WHERE user_id = ?',
                         array(Post::val('account_enabled', 0), Post::val('user_id')));
-
-                $db->Query('UPDATE {users_in_groups} SET group_id = ?
+                    $db->Query('UPDATE {users_in_groups} SET group_id = ?
                          WHERE group_id = ? AND user_id = ?',
-                array(Post::val('group_in'), Post::val('old_global_id'), Post::val('user_id')));
+                        array(Post::val('group_in'), Post::val('old_global_id'), Post::val('user_id')));
+                }
             }
 
             endif; // end non project group changes
@@ -1276,7 +1317,8 @@ switch ($action = Req::val('action'))
               'create_attachments', 'delete_attachments', 'show_as_assignees',
               'view_history', 'close_own_tasks', 'close_other_tasks', 'edit_assignments',
               'assign_to_self', 'assign_others_to_self', 'add_to_assignees', 'view_reports',
-              'add_votes', 'group_open', 'view_effort', 'track_effort', 'view_actual_effort', 'add_multiple_tasks', 'view_roadmap'));
+              'add_votes', 'group_open', 'view_estimated_effort', 'track_effort',
+                'view_current_effort_done', 'add_multiple_tasks', 'view_roadmap'));
         }
 
         $args = array_map('Post_to0', $cols);
@@ -1500,9 +1542,9 @@ switch ($action = Req::val('action'))
                 // Check for duplicates on the same sub-level under same parent category.
                 // First, we'll have to find the right parent for the current category.
                 $sql = $db->Query('SELECT *
-                                     FROM flyspray_list_category
+                                     FROM {list_category}
                                     WHERE project_id = ? AND lft < ? and rgt > ?
-                                      AND lft = (SELECT MAX(lft) FROM flyspray_list_category WHERE lft < ? and rgt > ?)',
+                                      AND lft = (SELECT MAX(lft) FROM {list_category} WHERE lft < ? and rgt > ?)',
                                   array($proj->id, intval($listlft[$id]), intval($listrgt[$id]), intval($listlft[$id]), intval($listrgt[$id])));
 
                 $parent = $db->FetchRow($sql);
@@ -1644,7 +1686,7 @@ switch ($action = Req::val('action'))
                 array($task['task_id'], Post::val('related_task')));
 
         Flyspray::logEvent($task['task_id'], 11, Post::val('related_task'));
-        Flyspray::logEvent(Post::val('related_task'), 11, $task['task_id']);
+        Flyspray::logEvent(Post::val('related_task'), 15, $task['task_id']);
 
         $notify->Create(NOTIFY_REL_ADDED, $task['task_id'], Post::val('related_task'));
 
@@ -1673,7 +1715,7 @@ switch ($action = Req::val('action'))
                 $related_task = $db->FetchRow($sql);
                 $related_task = ($related_task['this_task'] == $task['task_id']) ? $related_task['related_task'] : $task['task_id'];
                 Flyspray::logEvent($task['task_id'], 12, $related_task);
-                Flyspray::logEvent($related_task, 12, $task['task_id']);
+                Flyspray::logEvent($related_task, 16, $task['task_id']);
                 $_SESSION['SUCCESS'] = L('relatedremoved');
             }
         }
@@ -1694,6 +1736,8 @@ switch ($action = Req::val('action'))
             break;
         }
 
+        // TODO: Log event in a later version.
+
         $_SESSION['SUCCESS'] = L('notifyadded');
         break;
 
@@ -1702,6 +1746,8 @@ switch ($action = Req::val('action'))
         // ##################
     case 'remove_notification':
         Backend::remove_notification(Req::val('user_id'), Req::val('ids'));
+
+        // TODO: Log event in a later version.
 
         $_SESSION['SUCCESS'] = L('notifyremoved');
         break;
@@ -1799,6 +1845,8 @@ switch ($action = Req::val('action'))
             break;
         }
 
+        // TODO: Log event in a later version.
+
         $_SESSION['SUCCESS'] = L('reminderaddedmsg');
         break;
 
@@ -1854,6 +1902,8 @@ switch ($action = Req::val('action'))
             }
         }
 
+        // TODO: Log event in a later version.
+
         $_SESSION['SUCCESS'] = L('groupswitchupdated');
         break;
 
@@ -1863,6 +1913,8 @@ switch ($action = Req::val('action'))
     case 'takeownership':
         Backend::assign_to_me($user->id, Req::val('ids'));
 
+        // TODO: Log event in a later version.
+
         $_SESSION['SUCCESS'] = L('takenownershipmsg');
         break;
 
@@ -1871,6 +1923,8 @@ switch ($action = Req::val('action'))
         // ##################
     case 'addtoassignees':
         Backend::add_to_assignees($user->id, Req::val('ids'));
+
+        // TODO: Log event in a later version.
 
         $_SESSION['SUCCESS'] = L('addedtoassignees');
         break;
@@ -2090,6 +2144,8 @@ switch ($action = Req::val('action'))
             $notify->Create(NOTIFY_PW_CHANGE, null, array($baseurl, $magic_url), $notify->SpecificAddresses(array($user_details['user_id']), true));
         }
 
+        // TODO: Log event in a later version.
+
         $_SESSION['SUCCESS'] = L('magicurlsent');
         break;
 
@@ -2112,6 +2168,8 @@ switch ($action = Req::val('action'))
         $db->Query("UPDATE  {users} SET user_pass = ?, magic_url = ''
                      WHERE  magic_url = ?",
         array($new_pass_hash, Post::val('magic_url')));
+
+        // TODO: Log event in a later version.
 
         $_SESSION['SUCCESS'] = L('passchanged');
         Flyspray::Redirect($baseurl);
@@ -2163,6 +2221,8 @@ switch ($action = Req::val('action'))
         }
         break;
 
+        // TODO: Log event in a later version.
+
         // ##################
         // Removing a vote for a task
         // ##################
@@ -2173,6 +2233,8 @@ switch ($action = Req::val('action'))
             Flyspray::show_error(L('voteremovefailed'));
             break;
         }
+
+        // TODO: Log event in a later version.
 
         // ##################
         // set supertask id
@@ -2201,17 +2263,21 @@ switch ($action = Req::val('action'))
             break;
         }
 
-        // check that supertask_id is a valid task id
-        $sql = $db->Query('SELECT COUNT(*) FROM {tasks}
+        $sql = $db->Query('SELECT project_id FROM {tasks}
                            WHERE  task_id = '.Post::val("supertask_id").';');
 
-        if (!$db->fetchOne($sql)) {
+        // check that supertask_id is a valid task id
+        $parent = $db->fetchRow($sql);
+        if (!$parent) {
             Flyspray::show_error(L('invalidsupertaskid'));
             break;
         }
 
-        // Log the event in the task history
-        Flyspray::logEvent(Get::val('task_id'), 34, Get::val('subtaskid'));
+        // check to see that both tasks belong to the same project
+        if ($task['project_id'] != $parent['project_id']) {
+            Flyspray::show_error(L('musthavesameproject'));
+            break;
+        }
 
         //finally looks like all the checks are valid so update the supertask_id for the current task
         $db->Query('UPDATE  {tasks}
@@ -2219,11 +2285,28 @@ switch ($action = Req::val('action'))
                      WHERE  task_id = ?',
         array(Post::val('supertask_id'),Post::val('task_id')));
 
+        // If task already had a different parent, the log removal too
+        if ($task['supertask_id']) {
+            Flyspray::logEvent($task['supertask_id'], 33, Post::val('task_id'));
+            Flyspray::logEvent(Post::val('task_id'), 35, $task['supertask_id']);
+        }
+
+        // Log the events in the task history
+        Flyspray::logEvent(Post::val('supertask_id'), 32, Post::val('task_id'));
+        Flyspray::logEvent(Post::val('task_id'), 34, Post::val('supertask_id'));
+
         // set success message
         $_SESSION['SUCCESS'] = L('supertaskmodified');
 
         break;
     case 'task.bulkupdate':
+        # TODO check if the user has the right to do each action on each task id he send with the form!
+        # TODO check if tasks have open subtasks before closing
+        # TODO SQL Transactions with rollback function if something went wrong in the middle of bulk action
+        $massopsenabled=0; # 20150305 disabled for 1.0 release until proper checks are done
+        if($massopsenabled==1){
+
+        // TODO: Log events in a later version.
 
         if(Post::val('updateselectedtasks') == "true") {
             //process quick actions
@@ -2245,65 +2328,56 @@ switch ($action = Req::val('action'))
             $values = array();
 
             //determine the tasks properties that have been modified.
-            if(!Post::val('bulk_status')==0)
-            {
+            if(!Post::val('bulk_status')==0){
                 array_push($columns,'item_status');
                 array_push($values, Post::val('bulk_status'));
             }
-            if(!Post::val('bulk_percent_complete')==0)
-            {
+            if(!Post::val('bulk_percent_complete')==0){
                 array_push($columns,'percent_complete');
                 array_push($values, Post::val('bulk_percent_complete'));
             }
-            if(!Post::val('bulk_task_type')==0)
-            {
+            if(!Post::val('bulk_task_type')==0){
                 array_push($columns,'task_type');
                 array_push($values, Post::val('bulk_task_type'));
             }
-            if(!Post::val('bulk_category')==0)
-            {
+            if(!Post::val('bulk_category')==0){
                 array_push($columns,'product_category');
                 array_push($values, Post::val('bulk_category'));
             }
-            if(!Post::val('bulk_os')==0)
-            {
+            if(!Post::val('bulk_os')==0){
                 array_push($columns,'operating_system');
                 array_push($values, Post::val('bulk_os'));
             }
-            if(!Post::val('bulk_severity')==0)
-            {
+            if(!Post::val('bulk_severity')==0){
                 array_push($columns,'task_severity');
                 array_push($values, Post::val('bulk_severity'));
             }
-            if(!Post::val('bulk_priority')==0)
-            {
+            if(!Post::val('bulk_priority')==0){
                 array_push($columns,'task_priority');
                 array_push($values, Post::val('bulk_priority'));
             }
-            if(!Post::val('bulk_reportedver')==0)
-            {
+            if(!Post::val('bulk_reportedver')==0){
                 array_push($columns,'product_version');
                 array_push($values, Post::val('bulk_reportedver'));
             }
-            if(!Post::val('bulk_due_version')==0)
-            {
+            if(!Post::val('bulk_due_version')==0){
                 array_push($columns,'closedby_version');
                 array_push($values, Post::val('bulk_due_version'));
             }
-            if(!Post::val('bulk_projects')==0)
-            {
+            # TODO Does the user has similiar rights in current and target projects?
+            # TODO Does a task has subtasks? What happens to them? What if they are open/closed?
+            # But: Allowing task dependencies between tasks in different projects is a feature!
+            if(!Post::val('bulk_projects')==0){
                 array_push($columns,'project_id');
                 array_push($values, Post::val('bulk_projects'));
             }
-            if(!is_null(Post::val('bulk_due_date')))
-            {
+            if(!is_null(Post::val('bulk_due_date'))){
                 array_push($columns,'due_date');
                 array_push($values, Flyspray::strtotime(Post::val('bulk_due_date')));
             }
 
             //only process if one of the task fields has been updated.
-            if(!array_count_values($columns)==0 && Post::val('ids'))
-            {
+            if(!array_count_values($columns)==0 && Post::val('ids')){
                 //add the selected task id's to the query string
                 $task_ids = Post::val('ids');
                 $valuesAndTasks = array_merge_recursive($values,$task_ids);
@@ -2315,20 +2389,16 @@ switch ($action = Req::val('action'))
             }
 
             //Set the assignments
-            if(Post::val('bulk_assignment'))
-            {
+            if(Post::val('bulk_assignment')){
                 // Delete the current assignees for the selected tasks
                 $db->Query("DELETE FROM {assigned} WHERE". substr(str_repeat(' task_id = ? OR ', count(Post::val('ids'))), 0, -3),Post::val('ids'));
 
                 // Convert assigned_to and store them in the 'assigned' table
-                foreach ((array)Post::val('ids') as $id)
-                {
+                foreach ((array)Post::val('ids') as $id){
                     //iterate the users that are selected on the user list.
-                    foreach ((array) Post::val('bulk_assignment') as $assignee)
-                    {
+                    foreach ((array) Post::val('bulk_assignment') as $assignee){
                         //if 'noone' has been selected then dont do the database update.
-                        if(!$assignee == 0)
-                        {
+                        if(!$assignee == 0){
                             //insert the task and user id's into the assigned table.
                             $db->Query('INSERT INTO  {assigned}
                                              (task_id,user_id)
@@ -2363,5 +2433,9 @@ switch ($action = Req::val('action'))
             }
             $_SESSION['SUCCESS'] = L('taskclosedmsg');
             break;
+        }
+        } # end if massopsenabled
+        else{
+        	Flyspray::show_error(L('massopsdisabled'));
         }
     }

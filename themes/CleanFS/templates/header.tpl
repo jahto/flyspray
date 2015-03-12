@@ -42,7 +42,7 @@
     <script type="text/javascript" src="<?php echo Filters::noXSS($baseurl); ?>js/jscalendar/calendar-setup_stripped.js"> </script>
     <script type="text/javascript" src="<?php echo Filters::noXSS($baseurl); ?>js/jscalendar/lang/calendar-<?php echo Filters::noXSS(substr(L('locale'), 0, 2)); ?>.js"></script>
     <script type="text/javascript" src="<?php echo Filters::noXSS($baseurl); ?>js/lightbox/js/lightbox.js"></script>
-    <script type="text/javascript" src="<?php echo Filters::noXSS($baseurl); ?>js/ckeditor/ckeditor.js"></script>
+    <?php if(isset($conf['general']['syntax_plugin']) && $conf['general']['syntax_plugin'] !='dokuwiki'): ?><script type="text/javascript" src="<?php echo Filters::noXSS($baseurl); ?>js/ckeditor/ckeditor.js"></script><?php endif; ?>
     <link rel="stylesheet" href="<?php echo Filters::noXSS($baseurl); ?>js/lightbox/css/lightbox.css" type="text/css" media="screen" />
     <!--[if IE]>
     <link media="screen" href="<?php echo Filters::noXSS($this->themeUrl()); ?>ie.css" rel="stylesheet" type="text/css" />
@@ -51,19 +51,17 @@
         <script type="text/javascript" src="<?php echo Filters::noXSS($baseurl); ?>plugins/<?php echo Filters::noXSS($file); ?>"></script>
     <?php endforeach; ?>
   </head>
-  <body onload="perms = new Perms('permissions');<?php
+  <body onload="<?php
         if (isset($_SESSION['SUCCESS']) && isset($_SESSION['ERROR'])):
         ?>window.setTimeout('Effect.Fade(\'mixedbar\', {duration:.3})', 10000);<?php
         elseif (isset($_SESSION['SUCCESS'])):
         ?>window.setTimeout('Effect.Fade(\'successbar\', {duration:.3})', 8000);<?php
         elseif (isset($_SESSION['ERROR'])):
-        ?>window.setTimeout('Effect.Fade(\'errorbar\', {duration:.3})', 8000);<?php endif ?>"
-				<?php if(isset($_GET['do'])) echo 'class="'.$_GET['do'].'"'; else echo 'class="index"'; ?>
-				>
+        ?>window.setTimeout('Effect.Fade(\'errorbar\', {duration:.3})', 8000);<?php endif ?>" class="<?php echo isset($_GET['do']) ? Filters::noXSS($_GET['do']) : 'index'; ?>">
 
     <!-- Display title and logo if desired -->
     <h1 id="title"><a href="<?php echo Filters::noXSS($baseurl); ?>">
-	<?php if (isset($fs->prefs['logo']) && $fs->prefs['logo'] != '') { ?>
+	<?php if ($fs->prefs['logo']) { ?>
 		<img src="<?php echo Filters::noXSS($baseurl.'/'.$fs->prefs['logo']); ?>">
 	<?php } ?>
 	<?php echo Filters::noXSS($proj->prefs['project_title']); ?>

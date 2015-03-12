@@ -91,13 +91,21 @@
 
         <li>
           <?php
-            if (! array_key_exists( 'logo', $fs->prefs) ) {
+            // TODO WTF?? Isn't that an old temp fix?
+            if (!array_key_exists('logo', $fs->prefs)) {
               $fs->prefs['logo'] = '';
             }
-
           ?>
+
           <label for="logo"><?php echo Filters::noXSS(L('showlogo')); ?></label>
-          <input id="logo" name="logo" type="file" accept="image/*" value="<?php echo Filters::noXSS($fs->prefs['logo']); ?>" />
+          <?php if ($fs->prefs['logo']):?>
+		    <img src="<?php echo Filters::noXSS($baseurl.'/'.$fs->prefs['logo']); ?>">
+	      <?php endif ?>
+        </li>
+
+        <li>
+          <label for="logo_input">&nbsp;</label>
+          <input id="logo_input" name="logo" type="file" accept="image/*" value="<?php echo Filters::noXSS($fs->prefs['logo']); ?>" />
         </li>
 
         <li>
@@ -122,12 +130,16 @@
 
         <li>
           <label for="dateformat"><?php echo Filters::noXSS(L('dateformat')); ?></label>
-          <input id="dateformat" name="dateformat" type="text" class="text" size="40" maxlength="30" value="<?php echo Filters::noXSS($fs->prefs['dateformat']); ?>" />
+          <select id="dateformat" name="dateformat">
+            <?php echo tpl_date_formats($fs->prefs['dateformat']); ?>
+          </select>
         </li>
 
         <li>
           <label for="dateformat_extended"><?php echo Filters::noXSS(L('dateformat_extended')); ?></label>
-          <input id="dateformat_extended" name="dateformat_extended" class="text" type="text" size="40" maxlength="30" value="<?php echo Filters::noXSS($fs->prefs['dateformat_extended']); ?>" />
+          <select id="dateformat_extended" name="dateformat_extended">
+            <?php echo tpl_date_formats($fs->prefs['dateformat_extended'], true); ?>
+          </select>
         </li>
 
         <li>
@@ -315,14 +327,11 @@
           </select>
         </li>
 
-          <li>
-            <label><?php echo Filters::noXSS(L('visiblecolumns')); ?></label>
-            <?php // Set the selectable column names
+        <?php // Set the selectable column names
             // Do NOT use real database column name here and in the next list,
             // but a term from translation table entries instead, because it's
-            // also used elsewhere to draw a localized version of the name,
-            // and with some extra work, this list too might show localized
-            // names in a future version. Look also at the end of function
+            // also used elsewhere to draw a localized version of the name.
+            // Look also at the end of function
             // tpl_draw_cell in scripts/index.php for further explanation.
             $columnnames = array(
                 'id' => L('id'),
@@ -350,8 +359,18 @@
                 'estimatedeffort' => L('estimatedeffort'),
                 'effort' => L('effort'));
             $selectedcolumns = explode(' ', Post::val('visible_columns', $fs->prefs['visible_columns']));
-            echo tpl_double_select('visible_columns', $columnnames, $selectedcolumns, false);
-          ?>
+        ?>
+
+        <li>
+          <label><?php echo Filters::noXSS(L('defaultorderby')); ?></label>
+          <select id="default_order_by" name="default_order_by">
+            <?php echo tpl_options($columnnames, $fs->prefs['default_order_by'], false); ?>
+          </select>
+        </li>
+
+          <li>
+            <label><?php echo Filters::noXSS(L('visiblecolumns')); ?></label>
+            <?php echo tpl_double_select('visible_columns', $columnnames, $selectedcolumns, false); ?>
           </li>
 
           <li>

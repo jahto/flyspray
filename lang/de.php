@@ -2,11 +2,11 @@
 //
 // This file is auto generated with langedit.php
 // Characters are UTF-8 encoded
-// 
+//
 // Be careful when editing this file manually, some text editors
 // may convert text to UCS-2 or similar (16-bit) which is NOT
 // readable by the PHP parser
-// 
+//
 // Furthermore, nothing else than the language array is saved
 // when using the langedit.php editor!
 //
@@ -43,7 +43,8 @@ $translation = array(
 'modifytasks'             => 'vorhandene Aufgaben ändern',
 'addcomments'             => 'Kommentare hinzufügen',
 'attachfiles'             => 'Dateien anhängen',
-'vote'                    => 'abstimmen',
+'vote'                    => 'Stimme',
+'tovote'                  => 'abstimmen',
 'groupenabled'            => 'Mitglieder können sich anmelden (Gruppe aktiv)',
 'tasktypelist'            => 'Aufgabentypen',
 'categorylist'            => 'Kategorien',
@@ -253,7 +254,9 @@ $translation = array(
 'thisoften'               => 'so oft erinnern',
 'startafter'              => 'Zeit bis zur ersten Erinnerung',
 'hours'                   => 'Stunden',
+'day'                     => 'Tag',
 'days'                    => 'Tage',
+'week'                    => 'Woche',
 'weeks'                   => 'Wochen',
 'addreminder'             => 'Erinnerung hinzufügen',
 'defaultreminder'         => 'Erinnerung: Bitte sehen Sie sich die folgende Flyspray-Aufgabe an:',
@@ -311,7 +314,7 @@ $translation = array(
 'makepublic'              => 'veröffentlichen',
 'taskmadeprivate'         => 'Diese Aufgabe wurde versteckt',
 'taskmadepublic'          => 'Diese Aufgabe wurde wieder veröffentlicht',
-'confirmdeletecomment'    => 'Diesen Kommentar wirklich löschen?  Es werden auch alle Anhänge gelöscht!',
+'confirmdeletecomment'    => 'Diesen Kommentar wirklich löschen? %s',
 'confirmdeleteattach'     => 'Diesen Anhang wirklich löschen?',
 'selectedhistory'         => 'Verlauf für markierten Eintrag anzeigen',
 'showallhistory'          => 'Kompletten "Verlauf"-Tab wieder anzeigen',
@@ -434,14 +437,14 @@ $translation = array(
 'mysearch'                => 'meine Suchprofile',
 'admintoolbox'            => 'Verwaltungswerkzeuge',
 'manageproject'           => 'Projektverwaltung',
-'permissions'             => 'Berechtigungen anzeigen',
+'permissions'             => 'Berechtigungen',
 'hide'                    => 'verstecken',
 'pendingreq'              => 'Anstehende Anfragen an den  Projektmanager',
 'errorpage'               => "Die angeforderte Seite kann nicht angezeigt werden.\n\nMöglicherweise haben Sie eine nicht vorhandene Aufgabe ausgewählt oder Sie besitzen keine Berechtigung, um die aufgerufene Seite anzuzeigen. \n\nFalls Sie versucht haben eine Sicherheitslücke wie beispielsweise SQL-Injection auszunutzen, gehen Sie in die Ecke und schämen sich! Bitte versuchen Sie es nicht noch einmal.",
 'permissionsforproject'   => 'Berechtigungen für ',
 'switchto'                => 'auswählen',
 'lastsearch'              => 'meine letzte Suche',
-'modify'                  => 'Ändern',
+'modify'                  => 'ändern',
 'noticefrom'              => 'Nachricht von',
 'hasopened'               => 'hat eine neue Flyspray-Aufgabe angelegt und Ihnen übertragen:',
 'moreinfonew'             => 'Einzelheiten zu dieser Aufgabe erfahren Sie auf folgender Flyspray-Seite:',
@@ -768,7 +771,7 @@ $translation = array(
 'defaulttask'             => 'Standard Aufgabenbeschreibung',
 'all'                     => 'alles',
 'events.useraddedtoassignees'=> 'Zuständigen hinzugefügt',
-'vote(s)'                 => 'Stimmen',
+'vote'                    => 'Stimme',
 'eventlog'                => 'Berichte',
 'assignmentchanged'       => 'Zuständigkeit geändert',
 'detailedinfo'            => 'Details',
@@ -859,7 +862,7 @@ $translation = array(
 'viewgraph'               => 'Diagramm anzeigen',
 'notaskdependencies'      => 'Diese Aufgabe hängt von keiner anderen Aufgabe ab.',
 'dependson'               => 'abhängig von',
-'blocks'                  => 'Blocks',
+'blocks'                  => 'blockiert',
 'newdependency'           => 'Neue Abhängigkeit:',
 'nouserstoadd'            => 'Kein Nutzer eingetragen. Name, Nutzername und Emailadresse sind notwendig für jeden Nutzer.',
 'dispintro'               => 'Zeige Projektbeschreibung',
@@ -904,7 +907,7 @@ $translation = array(
 'useeffort'               => 'Projekt nutzt Aufwandmessung',
 'estimatedeffort'         => 'geschätzter Aufwand',
 'totalestimatedeffort'    => 'geschätzter Gesamtaufwand',
-'actualeffort'            => 'bisher erfolgter Aufwand',
+'currenteffortdone'       => 'bisher erfolgter Aufwand',
 'starteffort'             => 'Starte Aufwandmessung',
 'endeffort'               => 'Stoppe Aufwandmessung',
 'cleareffort'             => 'Entferne Aufwandmessung',
@@ -916,7 +919,7 @@ $translation = array(
 'efforttrackingcancelled' => 'Aufwandsmessung abgebrochen für diese Aufgabe.',
 'efforttrackingadded'     => 'Aufwandseintrag für diese Aufgabe wurde gespeichert.',
 'trackinginprogress'      => 'Aufwandsmessung läuft',
-'vieweffort'              => 'Kann Aufwandsmessung anschauen',
+'viewestimatedeffort'     => 'Kann Aufwandsmessung anschauen',
 'viewcurrenteffortdone'   => 'darf erfolgten Arbeitsaufwand anschauen',
 'trackeffort'             => 'Kann Aufwandsmessung nutzen',
 'invalideffort'           => 'Der eingegebene Aufwand ist ungültig. Es muss eine Zahl sein.',
@@ -948,9 +951,7 @@ $translation = array(
 'pagesintromsg'           => 'Seiten, auf denen der Projekteinführungstext zu sehen ist',
 'activeoauths'            => 'zugelassene Oauth-Anbieter',
 'onlyoauthreg'            => 'nur Anmeldung per Oauth erlauben',
-'effortformat'            => 'Anzeigeformat für geschätzten Arbeitsaufwand',
 'estimatedeffortformat'   => 'Anzeigeformat für geschätzten Arbeitsaufwand',
-'actualeffortformat'      => 'Anzeigeformat für erfolgten Arbeitsaufwand',
 'currenteffortdoneformat' => 'Anzeigeformat für erfolgten Arbeitsaufwand',
 'minuteplural'            => 'Minuten',
 'minutesingular'          => 'Minute',
@@ -971,6 +972,24 @@ $translation = array(
 'taskhassubtask'          => 'Diese Aufgabe hat folgende Unteraufgabe',
 'taskhassubtasks'         => 'Diese Aufgabe hat folgende Unteraufgaben',
 'translations'            => 'Übersetzungen',
+'translate'               => 'Übersetze',
+'taskdescription'         => 'Aufgabenbeschreibung',
+'notaskdescription'       => 'nicht vorhanden',
+'pleaseselect'            => 'Bitte auswählen',
+'closeselectedtasks'      => 'ausgewählte Aufgaben schließen',
+'closetasks'              => 'Aufgaben schließen',
+'hintforbulkimport'       => '<b>Hinweise zum Mehrfachimport</b>
+  <ol>
+  <li>Copy and paste from an excel spreadsheet or CSV by pasting one entire column.</li>
+  <li>Currently you can only paste Summary and Details.</li>
+  <li>Die Aufgabenzuweisung hat eine Autovervollständigenfunktion, einfach anfangen Namen einzutippen und Vorschläge werden angezeigt.</li>
+  </ol>',
+'taskissubtaskof'         => 'Die Aufgabe ist eine Unteraufgabe von',
+'applyfirstline'          => 'Erste Zeile in alle darunter kopieren',
+'addmorerows'             => 'weitere Zeilen einfügen',
+'addtasks'                => 'Aufgaben eintragen',
+'massopsdisabled'         => 'Die Massenbearbeitung von Aufgaben ist derzeit abgeschaltet für Flyspray 1.0. Diese Fähigkeit wird wieder freigeschaltet, sobald die Überarbeitung abgeschlossen ist.',
+'viewroadmap'             => 'Planung anschauen'
 );
 
 ?>

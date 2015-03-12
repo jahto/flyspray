@@ -82,7 +82,7 @@ class Flyspray
 
         $sizes = array();
         foreach (array(ini_get('memory_limit'), ini_get('post_max_size'), ini_get('upload_max_filesize')) as $val) {
-            if (!$val) {
+            if (!$val || $val < 0) {
                 continue;
             }
 
@@ -521,6 +521,8 @@ class Flyspray
         // 31: User deletion
         // 32: Add new subtask
         // 33: Remove Subtask
+        // 34: Add new parent
+        // 35: Remove parent
 
         $query_params = array(intval($task_id), intval($user->id),
                              ((!is_numeric($time)) ? time() : $time),
@@ -802,7 +804,7 @@ class Flyspray
             $_SESSION['SESSNAME'] = $sessname;
         }
         */
-        
+
         $url = parse_url($GLOBALS['baseurl']);
         session_name('flyspray');
         session_set_cookie_params(0,$url['path'],'','', TRUE);

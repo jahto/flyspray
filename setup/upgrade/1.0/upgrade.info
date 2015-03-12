@@ -1,8 +1,10 @@
 [defaultupgrade]
 1="upgrade.xml"
+2="varchartotext.php"
 
 [develupgrade]
 1="upgrade.xml"
+2="varchartotext.php"
 
 [fsprefs]
 fs_ver="0.9.7" ; doesn't matter which version
@@ -48,3 +50,4 @@ active_oauths=""
 only_oauth_reg="0"
 enable_avatars="1"
 max_avatar_size="50"
+default_order_by="id"

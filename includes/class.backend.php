@@ -249,6 +249,7 @@ abstract class Backend
 
             if($db->Query("INSERT INTO {votes} (user_id, task_id, date_time)
                            VALUES (?,?,?)", array($user->id, $task_id, time()))) {
+                // TODO: Log event in a later version.
                 return true;
             }
         }
@@ -282,6 +283,7 @@ abstract class Backend
 
             if($db->Query("DELETE FROM {votes} WHERE user_id = ? and task_id = ?",
                             array($user->id, $task_id))) {
+                // TODO: Log event in a later version.
                return true;
             }
         }
@@ -437,6 +439,7 @@ abstract class Backend
 		    // Insert into database
 		    $db->Query("INSERT INTO {links} (task_id, comment_id, url, added_by, date_added) VALUES (?, ?, ?, ?, ?)",
 			    array($task_id, $comment_id, $text, $user->id, time()));
+                    // TODO: Log event in a later version.
 	    }
 
 	    return $res;
@@ -495,6 +498,7 @@ abstract class Backend
 		    }
 
 		    $db->Query('DELETE FROM {links} WHERE link_id = ?', array($task['link_id']));
+                    // TODO: Log event in a later version.
 	    }
     }
 
@@ -534,6 +538,11 @@ abstract class Backend
         global $fs, $db, $notify, $baseurl;
 
         $user_name = Backend::clean_username($user_name);
+
+    	// TODO Handle this whole create_user better concerning return false. Why did it fail?
+    	if (empty($user_name)) {
+    		return false;
+    	}
 
         // Limit length
         $real_name = substr(trim($real_name), 0, 100);
@@ -918,7 +927,7 @@ abstract class Backend
         // Process estimated effort
         $estimated_effort = 0;
         if ($proj->prefs['use_effort_tracking'] && isset($sql_args['estimated_effort'])) {
-            if (($estimated_effort = effort::EditStringToSeconds($sql_args['estimated_effort'], $proj->prefs['hours_per_manday'], $proj->prefs['effort_format'])) === FALSE) {
+            if (($estimated_effort = effort::EditStringToSeconds($sql_args['estimated_effort'], $proj->prefs['hours_per_manday'], $proj->prefs['estimated_effort_format'])) === FALSE) {
                 Flyspray::show_error(L('invalideffort'));
                 $estimated_effort = 0;
             }
@@ -1138,11 +1147,19 @@ abstract class Backend
      */
     public static function get_task_list($args, $visible, $offset = 0, $perpage = 20)
     {
-        global $proj, $db, $user, $fsconf;
+        global $fs, $proj, $db, $user, $fsconf;
         /* build SQL statement {{{ */
         // Original SQL courtesy of Lance Conry http://www.rhinosw.com/
         $where  = $sql_params = array();
-
+        
+        // PostgreSQL LIKE searches are by default case sensitive,
+        // so we use ILIKE instead. For other databases, in our case
+        // only MySQL/MariaDB, LIKE is good for our purposes.
+        $LIKEOP = 'LIKE';
+        if ($db->dblink->dataProvider == 'postgres') {
+            $LIKEOP = 'ILIKE';
+        }
+        
         $select = '';
         $groupby = 't.task_id, ';
         $from   = '             {tasks}         t
@@ -1260,10 +1277,25 @@ abstract class Backend
         // make sure that only columns can be sorted that are visible (and task severity, since it is always loaded)
         $order_keys = array_intersect_key($order_keys, array_merge(array_flip($visible), array('severity' => 'task_severity')));
 
-        $order_column[0] = $order_keys[Filters::enum(array_get($args, 'order', 'priority'), array_keys($order_keys))];
+    	// Implementing setting "Default order by"
+    	if (!array_key_exists('order', $args)) {
+    		$sort = 'desc';
+			if ($proj->id) {
+				$orderBy = $proj->prefs['default_order_by'];
+			}
+    		else {
+    			$orderBy = $fs->prefs['default_order_by'];
+    		}
+    	}
+    	else {
+    		$orderBy = $args['order'];
+    		$sort = $args['sort'];
+    	}
+
+        $order_column[0] = $order_keys[Filters::enum(array_get($args, 'order', $orderBy), array_keys($order_keys))];
         $order_column[1] = $order_keys[Filters::enum(array_get($args, 'order2', 'severity'), array_keys($order_keys))];
         $sortorder  = sprintf('%s %s, %s %s, t.task_id ASC',
-                $order_column[0], Filters::enum(array_get($args, 'sort', 'desc'), array('asc', 'desc')),
+                $order_column[0], Filters::enum(array_get($args, 'sort', $sort), array('asc', 'desc')),
                 $order_column[1], Filters::enum(array_get($args, 'sort2', 'desc'), array('asc', 'desc')));
 
         /// process search-conditions {{{
@@ -1306,7 +1338,7 @@ abstract class Backend
                     } else {
                         foreach ($db_key as $singleDBKey) {
                             if (strpos($singleDBKey, '_name') !== false) {
-                                $temp .= ' ' . $singleDBKey . ' LIKE ? OR ';
+                                $temp .= ' ' . $singleDBKey . " $LIKEOP ? OR ";
                                 $sql_params[] = '%' . $val . '%';
                             } elseif (is_numeric($val)) {
                                 $temp .= ' ' . $singleDBKey . ' = ? OR';
@@ -1357,15 +1389,15 @@ abstract class Backend
             $where_temp = array();
 
             if (array_get($args, 'search_in_comments')) {
-                $comments .= 'OR c.comment_text LIKE ?';
+                $comments .= "OR c.comment_text $LIKEOP ?";
             }
             if (array_get($args, 'search_in_details')) {
-                $comments .= 'OR t.detailed_desc LIKE ?';
+                $comments .= "OR t.detailed_desc $LIKEOP ?";
             }
 
             foreach ($words as $word) {
                 $likeWord = '%' . str_replace('+', ' ', trim($word)) . '%';
-                $where_temp[] = "(t.item_summary LIKE ? OR t.task_id = ? $comments)";
+                $where_temp[] = "(t.item_summary $LIKEOP ? OR t.task_id = ? $comments)";
                 array_push($sql_params, $likeWord, intval($word));
                 if (array_get($args, 'search_in_comments')) {
                     array_push($sql_params, $likeWord);

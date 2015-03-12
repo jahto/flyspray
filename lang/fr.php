@@ -1,14 +1,14 @@
 <?php
 //
-// This file is auto generated with .langedit.php
+// This file is auto generated with langedit.php
 // Characters are UTF-8 encoded
-//
+// 
 // Be careful when editing this file manually, some text editors
 // may convert text to UCS-2 or similar (16-bit) which is NOT
 // readable by the PHP parser
-//
+// 
 // Furthermore, nothing else than the language array is saved
-// when using the .langedit.php editor!
+// when using the langedit.php editor!
 //
 $translation = array(
 'edituser'                => 'Editer l\'utilisateur',
@@ -252,8 +252,11 @@ $translation = array(
 'remindthisuser'          => 'Destinataire du rappel : ',
 'thisoften'               => 'Période : ',
 'startafter'              => 'Avant le premier rappel, attendre',
+'hour'                    => 'heure',
 'hours'                   => 'Heure(s)',
+'day'                     => 'jour',
 'days'                    => 'Jour(s)',
+'week'                    => 'semaine',
 'weeks'                   => 'Semaine(s)',
 'addreminder'             => 'Créer le rappel',
 'defaultreminder'         => 'Ceci est un rappel de surveillance de tâche :',
@@ -311,7 +314,8 @@ $translation = array(
 'makepublic'              => 'Rendre publique',
 'taskmadeprivate'         => 'Cette tâche a été rendue privée',
 'taskmadepublic'          => 'Cette tâche a été rendue publique',
-'confirmdeletecomment'    => 'Voulez-vous vraiment supprimer ce commentaire ? Toutes les pièces jointes seront également supprimées !',
+'confirmdeletecomment'    => 'Voulez-vous vraiment supprimer ce commentaire ? %s',
+'attachementswilldeleted' => 'Toutes les pièces jointes seront supprimée!',
 'confirmdeleteattach'     => 'Voulez-vous vraiment supprimer cette pièce jointe ?',
 'selectedhistory'         => 'Historique des tâches sélectionnées',
 'showallhistory'          => 'Réafficher l\'historique complet',
@@ -400,6 +404,7 @@ $translation = array(
 'nosearches'              => 'Pas de recherche enregistrée',
 'saving'                  => 'Enregistrement...',
 'votes'                   => 'Votes',
+'tovote'                  => 'Voter',
 'allclosedtasks'          => 'Toutes les tâches fermées',
 'password'                => 'Mot de passe',
 'login'                   => 'Se connecter',
@@ -768,7 +773,6 @@ $translation = array(
 'defaulttask'             => 'Description par défaut des tâches',
 'all'                     => 'tous',
 'events.useraddedtoassignees'=> 'Utilisateur ajouté aux destinataires',
-'vote(s)'                 => 'vote(s)',
 'eventlog'                => 'Journal des événements',
 'assignmentchanged'       => 'Assignation modifiée',
 'detailedinfo'            => 'Informations détaillées',
@@ -899,12 +903,13 @@ $translation = array(
 'parenttaskid'            => 'Identifiant de tâche parente',
 'invalidsupertaskid'      => 'Identifiant de tâche parente invalide.',
 'supertaskadded'          => 'Tâche parente ajoutée',
+'supertaskremoved'        => 'Tâche parente supprimée',
 'effort'                  => 'Effort',
 'efforttracking'          => 'Suivi d\'effort',
 'useeffort'               => 'Le project utilise le suivi d\'effort',
 'estimatedeffort'         => 'Effort estimé',
 'totalestimatedeffort'    => 'Effort estimé total',
-'actualeffort'            => 'Investissement effort actuel',
+'currenteffortdone'       => 'Effort fournis',
 'starteffort'             => 'Démarrer le suivi',
 'endeffort'               => 'Arrêter le suivi',
 'cleareffort'             => 'Effacer le suivi',
@@ -916,7 +921,7 @@ $translation = array(
 'efforttrackingcancelled' => 'Suivi d\'effort annulé pour cette tâche.',
 'efforttrackingadded'     => 'Effort manuel enregistré pour cette tâche.',
 'trackinginprogress'      => 'Suivi en cours',
-'vieweffort'              => 'Peux voir le suivi d\'effort',
+'viewestimatedeffort'     => 'Peut voir le suivi d\'effort',
 'viewcurrenteffortdone'   => 'Peux voir l\'effort dépensé actuel',
 'trackeffort'             => 'Peux suivre l\'effort',
 'invalideffort'           => 'L\'effort entré est invalide. Ce doit être un nombre',
@@ -948,8 +953,10 @@ $translation = array(
 'pagesintromsg'           => 'Pages sur lesquelles afficher le message d\'intro',
 'activeoauths'            => 'Fournisseurs Oauth actifs',
 'onlyoauthreg'            => 'Autoriser uniquement les inscriptions via Oauths',
-'effortformat'            => 'Format d\'affichage de l\'effort estimé',
-'actualeffortformat'      => 'Format actuel de l\'affichage de l\'effort',
+'estimatedeffortformat'   => 'Format d\'affichage de l\'effort estimé',
+'currenteffortdoneformat' => 'Format actuel de l\'affichage de l\'effort',
+'minute'                  => 'minute',
+'minutes'                 => 'minutes',
 'minuteplural'            => 'minutes',
 'minutesingular'          => 'minute',
 'minuteabbrev'            => 'm',
@@ -957,11 +964,31 @@ $translation = array(
 'hoursingular'            => 'hour',
 'hourabbrev'              => 'h',
 'estimatedeffortopen'     => 'Effort estimé pour les tâches ouvertes',
-'actualeffortopen'        => 'Effort actuel fourni dans les tâches ouvertes',
+'currenteffortdoneopen'   => 'Effort fournis dans les tâches ouverte',
 'signinwith'              => 'Se connecter avec %s',
 'canviewroadmap'          => 'Peux voir la feuille de route',
 'enableavatars'           => 'Activer les avatars',
-'maxavatarsize'           => 'Taille maximum des avatars'
+'maxavatarsize'           => 'Taille maximum des avatars',
+'taskhassubtask'          => 'Cette tâche a la sous-tâche suivante',
+'taskhassubtasks'         => 'Cette tâche a les sous-tâches suivantes',
+'translations'            => 'Traductions',
+'translate'               => 'Traduire',
+'taskdescription'         => 'Description de tâche',
+'notaskdescription'       => 'Pas de description',
+'pleaseselect'            => 'Veuillez sélectionner',
+'closeselectedtasks'      => 'Fermer les tâches sélectionnée',
+'closetasks'              => 'Fermer les tâches',
+'hintforbulkimport'       => "<b>Conseils pour l'import en paquet:</b>\n<ol>\n<li>Copiez /collez d'une feuille de calcul Excel ou CSV en collant une colonne entière.</li>\n<li>Pour le moment vous ne pouvez coller que Sommaire et Détails</li>\n<li>Il y a des suggestions lorsque vous assignez à quelqu'un, et à personne s'il n'y a pas de nom correspondant</li>\n</ol>",
+'taskissubtaskof'         => 'Cette tâche est une sous-tâche de',
+'applyfirstline'          => 'Appliquer la première ligne',
+'addmorerows'             => 'Ajouter plus de lignes',
+'addtasks'                => 'Ajouter les tâches',
+'massopsdisabled'         => 'Désolé, l\'édition de masse est désactivée pour Flyspray 1.0. Nous avons décidé de terminer son implémentation pour une future version de Flyspray. Vous pouvez activer cette fonction par le code source à vos risques, mais lisez attentivement les commentaires avant de le faire.',
+'viewroadmap'             => 'Peux voir la feuille de route',
+'nosuicide'               => 'Cher utilisateur, mon programme ne vous autorise pas à détruire votre accès à Flyspray en désactivant votre propre compte ou en changeant votre groupe d\'utilisateur. Signé le sympathique frère de HAL9000',
+'movingtodifferentproject'=> 'Déplacer une tâches qui a soit une tâche parente ou une sous-tâche dans un autre projet n\'est pas permis. Vous devez d\'abord supprimer les connexions entre elles.',
+'musthavesameproject'     => 'La tâche parente et la sous-tâche doivent appartenir au même projet.',
+'defaultorderby'          => 'Ordonner la liste des tâches par défaut par',
 );
 
 ?>

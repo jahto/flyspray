@@ -291,50 +291,39 @@ function tpl_userlink($uid)
     return $cache[$uid];
 }
 
-function tpl_userlinkavatar($uid, $size, $float = 'left', $padding = '0px')
+function tpl_userlinkavatar($uid, $size, $class='', $style='')
 {
 	global $db, $user;
 	if (is_array($uid)) {
 		list($uid, $uname, $rname) = $uid;
 	}
 
-	$sql = $db->Query('SELECT user_name, real_name, email_address FROM {users} WHERE user_id = ?',
-					array(intval($uid)));
+	$sql = $db->Query('SELECT user_name, real_name, email_address, profile_image FROM {users} WHERE user_id = ?',
+		array(intval($uid)));
 	if ($sql && $db->countRows($sql)) {
-		list($uname, $rname, $email) = $db->fetchRow($sql);
-	}
-	else {
+		list($uname, $rname, $email, $profile_image) = $db->fetchRow($sql);
+	}else {
 		return;
 	}
 
 	$email = md5(strtolower(trim($email)));
 	$default = 'mm';
 
-	$sql = $db->Query('SELECT profile_image FROM {users} WHERE user_id = ?', array(intval($uid)));
-	if ($sql && $db->countRows($sql))
-	{
-		$avatar_name = $db->fetchRow($sql);
-		if (is_file(BASEDIR.'/avatars/'.$avatar_name['profile_image'])) {
-			$image = "<img src='./avatars/".$avatar_name['profile_image']."' alt='".$avatar_name['profile_image']."' width='".$size."' height='".$size."'/>";
+	if(is_file(BASEDIR.'/avatars/'.$profile_image)) {
+		$image = "<img src='./avatars/".$profile_image."' width='".$size."' height='".$size."'/>";
+	} else {
+		if(isset($fs->prefs['gravatars']) && $fs->prefs['gravatars'] == 1) {
+			$url = '//www.gravatar.com/avatar/'.$email.'?d='.urlencode($default).'&s='.$size;
+			$image = '<img src="'.$url.'" width="'.$size.'" height="'.$size.'"/>';
+		}else{
+			$image = '';
 		}
-		else
-		{
-			if(isset($fs->prefs['gravatars']) && $fs->prefs['gravatars'] == 1) {
-				$url = 'http://www.gravatar.com/avatar/'.$email.'?d='.urlencode($default).'&s='.$size;
-				$image = '<img src='.$url.'/>';
-			}else{
-				$image = '';
-			}
-		}
-	}
-	else {
-		$image = '';
 	}
 
 	if (isset($uname)) {
 		$url = CreateURL(($user->perms('is_admin')) ? 'edituser' : 'user', $uid);
 		//$link = vsprintf('<a href="%s">%s</a>', array_map(array('Filters', ''), array($url, $image)));
-		$link = "<a style='float: ".$float."; padding: ".$padding."' href=".$url." title='".$rname."'>".$image."</a>";
+		$link = '<a'.($class!='' ? ' class="'.$class.'"':'').($style!='' ? ' style="'.$style.'"':'').' href="'.$url.'" title="'.$rname.'">'.$image.'</a>';
 	}
 	return $link;
 }
@@ -437,6 +426,79 @@ function tpl_userselect($name, $value = null, $id = '', $attrs = array()) {
     $page->display('common.userselect.tpl');
 }
 // }}}
+
+/**
+ * Creates the options for a date format select
+ * @selected The format that should by selected by default
+ * @return html formatted options for a select tag
+**/
+function tpl_date_formats($selected, $detailed = false)
+{
+	$time = time();
+
+	if (!$detailed) {
+		$dateFormats = array(
+			'%d.%m.%Y' => strftime('%d.%m.%Y', $time),
+			'%d.%m.%y' => strftime('%d.%m.%y', $time),
+
+			'%Y.%m.%d' => strftime('%Y.%m.%d', $time),
+			'%y.%m.%d' => strftime('%y.%m.%d', $time),
+
+			'%d-%m-%Y' => strftime('%d-%m-%Y', $time),
+			'%d-%m-%y' => strftime('%d-%m-%y', $time),
+
+			'%Y-%m-%d' => strftime('%Y-%m-%d', $time),
+			'%y-%m-%d' => strftime('%y-%m-%d', $time),
+
+			'%d %b %Y' => strftime('%d %b %Y', $time),
+			'%d %B %Y' => strftime('%d %B %Y', $time),
+
+			'%b %d %Y' => strftime('%b %d %Y', $time),
+			'%B %d %Y' => strftime('%B %d %Y', $time),
+		);
+	}
+	else {
+		$dateFormats = array(
+			'%d.%m.%Y %H:%M' 	=> strftime('%d.%m.%Y %H:%M', $time),
+			'%d.%m.%y %H:%M' 	=> strftime('%d.%m.%y %H:%M', $time),
+
+			'%d.%m.%Y %I:%M %p' => strftime('%d.%m.%Y %I:%M %p', $time),
+			'%d.%m.%y %I:%M %p' => strftime('%d.%m.%y %I:%M %p', $time),
+
+			'%Y.%m.%d %H:%M' 	=> strftime('%Y.%m.%d %H:%M', $time),
+			'%y.%m.%d %H:%M' 	=> strftime('%y.%m.%d %H:%M', $time),
+
+			'%Y.%m.%d %I:%M %p' => strftime('%Y.%m.%d %I:%M %p', $time),
+			'%y.%m.%d %I:%M %p' => strftime('%y.%m.%d %I:%M %p', $time),
+
+			'%d-%m-%Y %H:%M' 	=> strftime('%d-%m-%Y %H:%M', $time),
+			'%d-%m-%y %H:%M' 	=> strftime('%d-%m-%y %H:%M', $time),
+
+			'%d-%m-%Y %I:%M %p' => strftime('%d-%m-%Y %I:%M %p', $time),
+			'%d-%m-%y %I:%M %p' => strftime('%d-%m-%y %I:%M %p', $time),
+
+			'%Y-%m-%d %H:%M' 	=> strftime('%Y-%m-%d %H:%M', $time),
+			'%y-%m-%d %H:%M' 	=> strftime('%y-%m-%d %H:%M', $time),
+
+			'%Y-%m-%d %I:%M %p' => strftime('%Y-%m-%d %I:%M %p', $time),
+			'%y-%m-%d %I:%M %p' => strftime('%y-%m-%d %I:%M %p', $time),
+
+			'%d %b %Y %H:%M' 	=> strftime('%d %b %Y %H:%M', $time),
+			'%d %B %Y %H:%M' 	=> strftime('%d %B %Y %H:%M', $time),
+
+			'%d %b %Y %I:%M %p' => strftime('%d %b %Y %I:%M %p', $time),
+			'%d %B %Y %I:%M %p' => strftime('%d %B %Y %I:%M %p', $time),
+
+			'%b %d %Y %H:%M' 	=> strftime('%b %d %Y %H:%M', $time),
+			'%B %d %Y %H:%M' 	=> strftime('%B %d %Y %H:%M', $time),
+
+			'%b %d %Y %I:%M %p' => strftime('%b %d %Y %I:%M %p', $time),
+			'%B %d %Y %I:%M %p' => strftime('%B %d %Y %I:%M %p', $time),
+		);
+	}
+
+	return tpl_options($dateFormats, $selected);
+}
 
 // {{{ Options for a <select>
 function tpl_options($options, $selected = null, $labelIsValue = false, $attr = null, $remove = null)
@@ -600,6 +662,14 @@ class TextFormatter
             return call_user_func(array($fsconf['general']['syntax_plugin'] . '_TextFormatter', 'render'),
                                   $text, $type, $id, $instructions);
         } else {
+            $text=strip_tags($text, '<br><br/><p><h2><h3><h4><h5><h5><h6><blockquote><a><img><u><b><strong><s><ins><del><ul><ol><li>');
+            if ($conf['general']['syntax_plugin'] && $conf['general']['syntax_plugin'] != 'none') {
+                $text='Missing output plugin '.$conf['general']['syntax_plugin'].'!'
+                .'<br/>Couldn\'t call '.$conf['general']['syntax_plugin'].'_TextFormatter::render()'
+                .'<br/>Temporarily handled like it is HTML until fixed<br/>'
+                .$text;
+            }
+
             //TODO: Remove Redundant Code once tested completely
             //Author: Steve Tredinnick
             //Have removed this as creating additional </br> lines even though <p> is already dealing with it
@@ -633,7 +703,7 @@ class TextFormatter
 
         //Activate CkEditor on TextAreas.
         $return .= "<script>
-                        CKEDITOR.replace( '".$name."' );
+                        CKEDITOR.replace( '".$name."', { entities: true, entities_latin: false, entities_processNumerical: false } );
                     </script>";
         return $return;
     }
@@ -684,25 +754,40 @@ function tpl_draw_perms($perms)
             'create_attachments', 'delete_attachments',
             'view_history', 'close_own_tasks', 'close_other_tasks',
             'assign_to_self', 'assign_others_to_self', 'view_reports',
-            'add_votes', 'edit_own_comments', 'view_effort', 'track_effort', 'view_actual_effort', 'add_multiple_tasks', 'view_roadmap');
+            'add_votes', 'edit_own_comments', 'view_estimated_effort',
+            'track_effort', 'view_current_effort_done', 'add_multiple_tasks', 'view_roadmap'
+    );
 
     $yesno = array(
-            '<td class="bad">' . eL('no') . '</td>',
-            '<td class="good">' . eL('yes') . '</td>');
+            '<td class="bad fa fa-ban" title="'.eL('no').'"></td>',
+            '<td class="good fa fa-check" title="'.eL('yes').'"></td>'
+    );
 
-    // FIXME: html belongs in a template, not in the template class
-    $html = '<table border="1" onmouseover="perms.hide()" onmouseout="perms.hide()">';
-    $html .= '<thead><tr><th colspan="2">';
-    $html .= htmlspecialchars(L('permissionsforproject').$proj->prefs['project_title'], ENT_QUOTES, 'utf-8');
-    $html .= '</th></tr></thead><tbody>';
+    # 20150307 peterdd: This a temporary hack
+    $i=0;
+    $html='';
+    $projpermnames='';
 
-    foreach ($perms[$proj->id] as $key => $val) {
-        if (!is_numeric($key) && in_array($key, $perm_fields)) {
-            $html .= '<tr><th>' . eL(str_replace('_', '', $key)) . '</th>';
-            $html .= $yesno[ ($val || $perms[0]['is_admin']) ].'</tr>';
+    foreach ($perms as $projperm){
+        $html .= '<table class="perms"><thead><tr><th>'.($i==0? 'global' : L('project').' '.$i).'</th>'.($i==0? '<th>'.L('permissions').'</th>' : '').'</tr></thead><tbody>';
+        foreach ($projperm as $key => $val) {
+            if (!is_numeric($key) && in_array($key, $perm_fields)) {
+               $html .= '<tr>';
+               $html .= $yesno[ ($val || $perms[0]['is_admin']) ];
+               $html .= $i==0 ? '<th>'.eL(str_replace('_','',$key)).'</th>' : '';
+               $html .= '</tr>';
+
+               # all projects have same permnames
+               $projpermnames .= $i==1 ? '<tr><td>'.eL(str_replace('_','',$key)).'</td></tr>' : '';
+            }
         }
+        $html.= '</tbody></table>';
+        $i++;
     }
-    return $html . '</tbody></table>';
+    $html.='<table class="perms"><thead><th>'.L('permissions').'</th></thead><tbody>'.$projpermnames.'</tbody></table>';
+    $html.='<style>.perms tr{height:30px;}</style>';
+    # end 20150307
+    return $html;
 } // }}}
 
 function tpl_disableif ($if)

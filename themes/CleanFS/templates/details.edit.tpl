@@ -22,12 +22,11 @@
                 <?php } else { ?>
 			<li style="display:none">
 		<?php } ?>
+	            <label for="status"><?php echo Filters::noXSS(L('status')); ?></label>
+	            <select id="status" name="item_status" <?php echo tpl_disableif(!$user->perms('modify_all_tasks')); ?>>
+	              <?php echo tpl_options($proj->listTaskStatuses(), Req::val('item_status', ($user->perms('modify_all_tasks') ? STATUS_NEW : STATUS_UNCONFIRMED))); ?>
 
-				<label for="status"><?php echo Filters::noXSS(L('status')); ?></label>
-				<select id="status" name="item_status">
-				 <?php echo tpl_options($proj->listTaskStatuses(), Req::val('item_status', $task_details['item_status'])); ?>
-
-				</select>
+	            </select>
 			</li>
 
                 <!-- Progress -->
@@ -37,7 +36,7 @@
 			<li style="display:none">
 		<?php } ?>
 				<label for="percent"><?php echo Filters::noXSS(L('percentcomplete')); ?></label>
-				<select id="percent" name="percent_complete">
+				<select id="percent" name="percent_complete" <?php echo tpl_disableif(!$user->perms('modify_all_tasks')) ?>>
 				 <?php $arr = array(); for ($i = 0; $i<=100; $i+=10) $arr[$i] = $i.'%'; ?>
 				 <?php echo tpl_options($arr, Req::val('percent_complete', $task_details['percent_complete'])); ?>
 
@@ -127,7 +126,7 @@
 				<li style="display:none">
 		<?php } ?>
 					<label for="priority"><?php echo Filters::noXSS(L('priority')); ?></label>
-					<select id="priority" name="task_priority">
+					<select id="priority" name="task_priority" <?php echo tpl_disableif(!$user->perms('modify_all_tasks')) ?>>
 					 <?php echo tpl_options($fs->priorities, Req::val('task_priority', $task_details['task_priority'])); ?>
 
 					</select>
@@ -153,7 +152,7 @@
 				<li style="display:none">
 		<?php } ?>
 					<label for="dueversion"><?php echo Filters::noXSS(L('dueinversion')); ?></label>
-					<select id="dueversion" name="closedby_version">
+					<select id="dueversion" name="closedby_version" <?php echo tpl_disableif(!$user->perms('modify_all_tasks')) ?>>
 					 <option value="0"><?php echo Filters::noXSS(L('undecided')); ?></option>
 					 <?php echo tpl_options($proj->listVersions(false, 3), Req::val('closedby_version', $task_details['closedby_version'])); ?>
 
@@ -161,7 +160,7 @@
 				</li>
 
                 <!-- Due Date -->
-                <?php if (in_array('duedate', $fields)) { ?>
+                <?php if (in_array('duedate', $fields) && $user->perms('modify_all_tasks')) { ?>
 				<li>
                 <?php } else { ?>
 				<li style="display:none">
@@ -185,15 +184,15 @@
 				<?php endif; ?>
 
           <?php if($proj->prefs['use_effort_tracking']) {
-                    if ($user->perms('view_effort')) {
+                    if ($user->perms('view_estimated_effort')) {
           ?>
           <li style="...">
               <label for="estimatedeffort"><?php echo Filters::noXSS(L('estimatedeffort')); ?></label>
-              <input id="estimated_effort" name="estimated_effort" class="text" type="text" size="5" maxlength="100" value="<?php echo Filters::noXSS(effort::SecondsToEditString($task_details['estimated_effort'], $proj->prefs['hours_per_manday'], $proj->prefs['effort_format'])); ?>" />
+              <input id="estimated_effort" name="estimated_effort" class="text" type="text" size="5" maxlength="100" value="<?php echo Filters::noXSS(effort::SecondsToEditString($task_details['estimated_effort'], $proj->prefs['hours_per_manday'], $proj->prefs['estimated_effort_format'])); ?>" />
               <?php echo Filters::noXSS(L('hours')); ?>
 
           </li>
-          <?php } 
+          <?php }
           } ?>
 
 		<!-- If no currently selected project is not there, push it on there so don't have to change things -->
