@@ -912,6 +912,9 @@ function CreateURL($type, $arg1 = null, $arg2 = null, $arg3 = array())
             case 'user':
                 $return = $baseurl . 'index.php?do=user&area=users&id=' . $arg1;
                 break;
+            case 'notifications':
+                $return = $baseurl . 'index.php?do=notifications&user_id=' . $arg1;
+                break;
             case 'edituser':
                 $return = $baseurl . 'index.php?do=admin&area=users&user_id=' . $arg1;
                 break;

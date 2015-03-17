@@ -118,14 +118,15 @@ class Notifications {
       return true;
    }
 
-   static function GetUnreadNotifications() {
+   static function GetUnreadNotifications($user_id) {
       global $db, $fs, $user;
 
       $notifications = $db->Query('SELECT r.recipient_id, m.message_subject
                                      FROM {notification_recipients} r
                                      JOIN {notification_messages} m ON r.message_id = m.message_id
                                     WHERE r.notify_method = ? AND notify_address = ?',
-              array('o', $user['user_id']));
+              array('o', $user_id));
+              // array('o', $user->perms('user_id')));
       return $db->FetchAllArray($notifications);
    }
 
