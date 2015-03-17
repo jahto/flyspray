@@ -411,7 +411,7 @@ Username: ',
 
 Regards,',
 'yourusername'            => ' your username ',
-'locale'                  => 'en-AU',
+'locale'                  => 'en-US',
 'filenotexist'            => 'File does not exist, or you do not have permission to access it.',
 'showtask'                => 'Show Task',
 'now'                     => 'Now',
@@ -1002,6 +1002,17 @@ Regards,',
 'nosuicide'               => 'Dear user, my program doesn\'t allow you to destroy your access to Flyspray by disabling your own account or switching your own group. The empathic brother of HAL9000',
 'movingtodifferentproject' => 'Moving a task that has either a parent or subtasks to a different project is not allowed. You must break the connection between them first.',
 'musthavesameproject'     => 'Parent and subtask must belong to the same project.',
-'defaultorderby'          => 'Order tasklist by default by'
+'defaultorderby'          => 'Order tasklist by default by',
+'viewowntasks'            => 'View own tasks',
+'viewgroupstasks'         => 'View groups tasks',
+'urlrewriting'            => 'Url rewriting',
+'enablehtaccess'          => 'Please enable your .htaccess file at Flyspray root before turning url rewriting on',
+'nomodrewrite'            => 'Mod rewrite doesn\'t seem to be available on this server, sorry but I can\'t turn url rewriting on',
+'on'                      => 'On',
+'off'                     => 'Off',
+'defaultorderbydirection' => 'Default order by direction',
+'ascending'               => 'Ascending',
+'descending'              => 'Descending',
+'myassignedtasks'         => 'My assigned tasks'
 );
 ?>

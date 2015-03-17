@@ -7,12 +7,16 @@ require_once dirname(__FILE__) . '/includes/constants.inc.php';
 require_once BASEDIR . '/includes/i18n.inc.php';
 require_once BASEDIR . '/includes/class.tpl.php';
 
-// Use composer autoloader
-require 'vendor/autoload.php';
-
-
 // Get the translation for the wrapper page (this page)
 setlocale(LC_ALL, str_replace('-', '_', L('locale')) . '.utf8');
+
+if(is_readable(BASEDIR . '/vendor/autoload.php')){
+        // Use composer autoloader
+        require 'vendor/autoload.php';
+}else{
+        Flyspray::Redirect('setup/composertest.php');
+        exit;
+}
 
 // If it is empty, take the user to the setup page
 if (!$fsconf) {

@@ -121,6 +121,7 @@ function tpl_draw_cell($task, $colname, $format = "<td class='%s'>%s</td>") {
             'id'         => 'task_id',
             'project'    => 'project_title',
             'tasktype'   => 'task_type',
+            'tasktypename'=> 'tasktype_name',
             'category'   => 'category_name',
             'severity'   => '',
             'priority'   => '',
@@ -149,6 +150,7 @@ function tpl_draw_cell($task, $colname, $format = "<td class='%s'>%s</td>") {
         //run away..
         return '';
     }
+    $class= 'task_'.$colname;
 
 	switch ($colname) {
         case 'id':
@@ -161,12 +163,19 @@ function tpl_draw_cell($task, $colname, $format = "<td class='%s'>%s</td>") {
             }
             break;
 
+        case 'tasktype':
+            $value = $task['tasktype_name'];
+            $class.=' typ'.$task['task_type'];
+            break;
+
         case 'severity':
             $value = $fs->severities[$task['task_severity']];
+            $class.=' sev'.$task['task_severity'];
             break;
 
         case 'priority':
             $value = $fs->priorities[$task['task_priority']];
+            $class.=' pri'.$task['task_priority'];
             break;
 
         case 'lastedit':
@@ -243,7 +252,7 @@ function tpl_draw_cell($task, $colname, $format = "<td class='%s'>%s</td>") {
             }
             break;
 	}
-	return sprintf($format, 'task_'.$colname, $value);
+	return sprintf($format, $class, $value);
 }
 
 // } }}
@@ -282,7 +291,7 @@ function do_cmp($a, $b)
 */
 function export_task_list()
 {
-        global $tasks, $fs, $user, $sort, $orderby;
+        global $tasks, $fs, $user, $sort, $orderby, $proj;
 
         if (!is_array($tasks)){
                 return;
@@ -357,7 +366,7 @@ function export_task_list()
         	'Status',
         	'Progress',
         	$user->perms('view_estimated_effort') ?'Estimated Effort':'',
-        	$user->perms('view_current_effort_done') ?'Done Effort':'',
+        	// $user->perms('view_current_effort_done') ?'Done Effort':'',
         	'Description',
         );
         # TODO maybe if user just want localized headings for nonenglish speaking audience..
@@ -372,12 +381,8 @@ function export_task_list()
                         $task['item_summary'],
                         $task['status_name'],
                         $task['percent_complete'],
-                        # better permission namings
-                        #$user->perms('view_estimated_effort')? $task['estimated_effort']:'',
-                        #$user->perms('view_done_effort')? $task['effort']:'',
-                        # current permission naming
-                        $user->perms('view_estimated_effort') ? $task['estimated_effort']:'',
-                        $user->perms('view_current_effort_done') ? $task['effort']:'',
+                        ($user->perms('view_estimated_effort') && $proj->prefs['use_effort_tracking']) ? $task['estimated_effort'] : '',
+                        // ($user->perms('view_current_effort_done') && $proj->prefs['use_effort_tracking']) ? $task['effort'] : '',
                         $task['detailed_desc']
                 );
                 fputcsv($output, $row);

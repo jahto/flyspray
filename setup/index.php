@@ -7,29 +7,7 @@
 // +----------------------------------------------------------------------
 
 @set_time_limit(0);
-
-// no transparent session id improperly configured servers
-ini_set('session.use_trans_sid', 0);
-
-session_start();
-//do it fastest as possible.
 ini_set('memory_limit', '64M');
-
-
-if (is_readable ('../flyspray.conf.php') && count(parse_ini_file('../flyspray.conf.php')) > 0)
-{
-   die('Flyspray already installed. Use the <a href="upgrade.php">upgrader</a> to upgrade your Flyspray, or delete flyspray.conf.php to run setup.
-        You can *not* use the setup on an existing database.');
-}
-
-$borked = str_replace('a', 'b', array( -1 => -1 ) );
-
-if(!isset($borked[-1])) {
-    die("Flyspray cannot run here, sorry :-( PHP 4.4.x/5.0.x is buggy on your 64-bit system; you must upgrade to PHP 5.1.x\n" .
-        "or higher. ABORTING. (http://bugs.php.net/bug.php?id=34879 for details)\n");
-}
-
-// define basic stuff first.
 
 define('IN_FS', 1 );
 define('APPLICATION_NAME', 'Flyspray');
@@ -37,13 +15,38 @@ define('BASEDIR', dirname(__FILE__));
 define('APPLICATION_PATH', dirname(BASEDIR));
 define('OBJECTS_PATH', APPLICATION_PATH . '/includes');
 define('TEMPLATE_FOLDER', BASEDIR . '/templates/');
-$fsconf['general']['syntax_plugin'] = '';
 
-require_once OBJECTS_PATH . '/fix.inc.php';
-require_once OBJECTS_PATH . '/class.gpc.php';
+require_once OBJECTS_PATH.'/fix.inc.php';
+require_once OBJECTS_PATH.'/class.gpc.php';
+require_once OBJECTS_PATH.'/class.flyspray.php';
+require_once OBJECTS_PATH.'/i18n.inc.php';
+require_once OBJECTS_PATH.'/class.tpl.php';
 
-// Use composer autoloader
-require dirname(__DIR__) . '/vendor/autoload.php';
+if (is_readable(APPLICATION_PATH . '/vendor/autoload.php')){
+    // Use composer autoloader
+    require APPLICATION_PATH . '/vendor/autoload.php';
+} else{
+        Flyspray::Redirect('composertest.php');
+        exit;
+}
+
+// no transparent session id improperly configured servers
+ini_set('session.use_trans_sid', 0);
+session_start();
+
+if (is_readable ('../flyspray.conf.php') && count(parse_ini_file('../flyspray.conf.php')) > 0){
+   die('Flyspray already installed. Use the <a href="upgrade.php">upgrader</a> to upgrade your Flyspray, or delete flyspray.conf.php to run setup.
+        You can *not* use the setup on an existing database.');
+}
+
+$borked = str_replace('a', 'b', array( -1 => -1 ) );
+if(!isset($borked[-1])) {
+    die("Flyspray cannot run here, sorry :-( PHP 4.4.x/5.0.x is buggy on your 64-bit system; you must upgrade to PHP 5.1.x\n" .
+        "or higher. ABORTING. (http://bugs.php.net/bug.php?id=34879 for details)\n");
+}
+
+$conf['general']['syntax_plugin'] = '';
+
 // ---------------------------------------------------------------------
 // Application Web locations
 // ---------------------------------------------------------------------
@@ -781,7 +784,6 @@ class Setup extends Flyspray
       $config[] = "passwdcrypt = \"md5\"					; Available options: \"crypt\", \"md5\", \"sha1\" (Deprecated, do not change the default)";
       $config[] = "dot_path = \"\" ; Path to the dot executable (for graphs either dot_public or dot_path must be set)";
       $config[] = "dot_format = \"png\" ; \"png\" or \"svg\"";
-      $config[] = "address_rewriting = \"0\"	; Boolean. 0 = off, 1 = on.";
       $config[] = "reminder_daemon = \"$daemonise\"		; Boolean. 0 = off, 1 = on (cron job), 2 = on (PHP).";
       $config[] = "doku_url = \"http://en.wikipedia.org/wiki/\"      ; URL to your external wiki for [[dokulinks]] in FS";
       $config[] = "syntax_plugin = \"none\"                               ; Plugin name for Flyspray's syntax (use any non-existing plugin name for deafult syntax)";
