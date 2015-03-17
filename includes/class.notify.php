@@ -52,7 +52,7 @@ class Notifications {
       // in these cases caller really has not set offset 2. Track down the
       // callers later.
       if ($ntype != NOTIFY_EMAIL && $ntype != NOTIFY_JABBER) {
-          if (!$this->StoreOnline((is_array($to[2]) ? $to[2] : $to), $msg[0], $msg[1], $msg[2], $task_id)) {
+          if (!$this->StoreOnline((is_array($to[2]) ? $to[2] : $to), $msg[2], $msg[3], $task_id)) {
               $result = false;
           }
       }
@@ -62,9 +62,12 @@ class Notifications {
    // End of Create() function
    } // }}}
 
-   function StoreOnline($to, $subject, $body, $online, $task_id = null) {
+   function StoreOnline($to, $short, $long, $task_id = null) {
       global $db, $fs;
 
+      // echo "<pre>";
+      // echo var_dump($to);
+      // echo "</pre>";
       if (!count($to)) {
         return false;
       }
@@ -75,7 +78,7 @@ class Notifications {
       $db->Query("INSERT INTO {notification_messages}
                   (message_subject, message_body, time_created)
                   VALUES (?, ?, ?)",
-                  array($online, '', $date)
+                  array($short, $long, $date)
                 );
 
       // grab notification id
@@ -513,7 +516,7 @@ class Notifications {
          -------------------------------
       */
 
-      $body = L('donotreply') . "\n\n";
+      $body = '';
       $online = '';
 
       // {{{ New task opened
@@ -545,7 +548,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $online .= L('newtaskopened') . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
          $online .= L('attachedtoproject') . ' - ' .  $task_details['project_title'] . ". ";
          $online .= L('summary') . ' - ' . $task_details['item_summary'];
 
@@ -610,7 +613,7 @@ class Notifications {
 
          $online .=  L('notify.taskclosed') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Task re-opened
       if ($type == NOTIFY_TASK_REOPENED)
@@ -623,7 +626,7 @@ class Notifications {
 
          $online .=  L('notify.taskreopened') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] .  "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] .  "). ";
       } // }}}
       // {{{ Dependency added
       if ($type == NOTIFY_DEP_ADDED)
@@ -640,7 +643,7 @@ class Notifications {
 
          $online .=  L('newdep') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Dependency removed
       if ($type == NOTIFY_DEP_REMOVED)
@@ -657,7 +660,7 @@ class Notifications {
 
          $online .= L('notify.depremoved') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Comment added
       if ($type == NOTIFY_COMMENT_ADDED)
@@ -688,7 +691,7 @@ class Notifications {
 
          $online .= L('notify.commentadded') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Attachment added
       if ($type == NOTIFY_ATT_ADDED)
@@ -701,7 +704,7 @@ class Notifications {
 
          $online .= L('newattachment') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Related task added
       if ($type == NOTIFY_REL_ADDED)
@@ -718,7 +721,7 @@ class Notifications {
 
          $online .= L('notify.relatedadded') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Ownership taken
       if ($type == NOTIFY_OWNERSHIP)
@@ -754,7 +757,7 @@ class Notifications {
 
          $online .= L('requiresaction') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ PM request denied
       if ($type == NOTIFY_PM_DENY_REQUEST)
@@ -769,7 +772,7 @@ class Notifications {
 
          $online .= L('pmdeny') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ New assignee
       if ($type == NOTIFY_NEW_ASSIGNEE)
@@ -782,7 +785,7 @@ class Notifications {
 
          $online .= L('assignedtoyou') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Reversed dep
       if ($type == NOTIFY_REV_DEP)
@@ -799,7 +802,7 @@ class Notifications {
 
          $online .= L('taskwatching') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Reversed dep - removed
       if ($type == NOTIFY_REV_DEP_REMOVED)
@@ -816,7 +819,7 @@ class Notifications {
 
          $online .= L('taskwatching') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ User added to assignees list
       if ($type == NOTIFY_ADDED_ASSIGNEES)
@@ -828,7 +831,7 @@ class Notifications {
 
          $online .= L('useraddedtoassignees') . ". ";
          $online .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ Anon-task has been opened
       if ($type == NOTIFY_ANON_TASK)
@@ -864,8 +867,10 @@ class Notifications {
 		$body .= L('messagefrom'). $arg1[0];
       } // }}}
 
+      $onlinelong = $body;
+      $body = L('donotreply') . "\n\n" . $body;
       $body .= '. '.L('disclaimer');
-      return array(Notifications::fixMsgData($subject), Notifications::fixMsgData($body), $online);
+      return array(Notifications::fixMsgData($subject), Notifications::fixMsgData($body), $online, $onlinelong);
 
    } // }}}
    // {{{ Create an address list for specific users
