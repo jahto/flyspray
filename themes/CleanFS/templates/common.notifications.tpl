@@ -19,7 +19,7 @@
     <tr>
       <td>
       <?php
-      echo $req['message_subject'];
+      echo $req['message_body'];
       ?>
       </td>
       <!--
