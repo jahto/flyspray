@@ -6,6 +6,8 @@
 // | Copyright (C) 2006-2007  by Cristian Rodriguez <judas.iscariote@flyspray.org> and Florian Schmitz <floele@gmail.com>
 // +----------------------------------------------------------------------
 
+// This file is a complete mess after merge and must be manually reconstructed some day.
+
 @set_time_limit(0);
 ini_set('memory_limit', '64M');
 
