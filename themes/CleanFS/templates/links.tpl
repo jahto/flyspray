@@ -109,7 +109,7 @@ endif; ?>
 		href="<?php echo Filters::noXSS(CreateURL('admin', 'userrequest')); ?>"><?php echo Filters::noXSS($admin_pendingreq_num); ?> <?php echo Filters::noXSS(L('adminrequestswaiting')); ?></a>
 	</li><?php
 	endif;
-	if (isset($online_notification_num) && $online_notification_num):
+	if (!$user->isAnon() && isset($online_notification_num) && $online_notification_num):
 	?><li>
 		<a class="pendingreq attention"
 		href="<?php echo Filters::noXSS(CreateURL('notifications', $user->id)); ?>"><?php echo Filters::noXSS($online_notification_num); ?> <?php echo Filters::noXSS(L('onlinenotifications')); ?></a>

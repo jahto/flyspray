@@ -157,15 +157,15 @@ if ($user->perms('is_admin')) {
     $page->assign('admin_pendingreq_num', $count);
 }
 
-// if ($user->perms('notify_online')) {
+if (!$user->isAnon() && $user->infos['notify_online']) {
 $sql = $db->Query('SELECT COUNT(*)
-                                     FROM {notification_recipients} r
-                                     JOIN {notification_messages} m ON r.message_id = m.message_id
-                                    WHERE r.notify_method = ? AND notify_address = ?',
+                    FROM {notification_recipients} r
+                    JOIN {notification_messages} m ON r.message_id = m.message_id
+                   WHERE r.notify_method = ? AND notify_address = ?',
               array('o', $user->id));
     list($count) = $db->fetchRow($sql);
     $page->assign('online_notification_num', $count);
-//}
+}
 
 $sql = $db->Query(
         'SELECT  project_id, project_title, project_is_active, others_view,
