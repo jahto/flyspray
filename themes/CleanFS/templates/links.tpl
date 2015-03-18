@@ -1,3 +1,41 @@
+    <script type="text/javascript">
+	var cX = 0; var cY = 0; var rX = 0; var rY = 0;
+	function UpdateCursorPosition(e){ cX = e.pageX; cY = e.pageY;}
+	function UpdateCursorPositionDocAll(e){ cX = e.clientX; cY = e.clientY;}
+	if(document.all) { document.onmousemove = UpdateCursorPositionDocAll; }
+	else { document.onmousemove = UpdateCursorPosition; }
+	function AssignPosition(d) {
+		if(self.pageYOffset)
+		{
+			rX = self.pageXOffset;
+			rY = self.pageYOffset;
+		}
+		else if(document.documentElement && document.documentElement.scrollTop) {
+			rX = document.documentElement.scrollLeft;
+			rY = document.documentElement.scrollTop;
+		}
+		else if(document.body) {
+			rX = document.body.scrollLeft;
+			rY = document.body.scrollTop;
+		}
+		if(document.all) {
+			cX += rX;
+			cY += rY;
+		}
+		d.style.left = (cX+10) + "px";
+		d.style.top = (cY+10) + "px";
+	}
+	function Show(elem, id)
+	{
+		var div = document.getElementById("desc_"+id);
+		AssignPosition(div);
+		div.style.display = "block";
+	}
+	function Hide(elem, id)
+	{
+		document.getElementById("desc_"+id).style.display = "none";
+	}
+    </script>
 <div id="menu"><ul id="menu-list"><?php
 if ($user->isAnon()):
 	# 20150211 peterdd: pure css toggle using checked status, no js needed
@@ -111,9 +149,25 @@ endif; ?>
 	endif;
 	if (!$user->isAnon() && isset($online_notification_num) && $online_notification_num):
 	?><li>
-		<a class="pendingreq attention"
-		href="<?php echo Filters::noXSS(CreateURL('notifications', $user->id)); ?>"><?php echo Filters::noXSS($online_notification_num); ?> <?php echo Filters::noXSS(L('onlinenotifications')); ?></a>
-	</li><?php
+            <div id="notifications" onmouseover="Show(this, 'notifications')" onmouseout="Hide(this, 'notifications')">
+	     <a class="pendingreq attention"
+		href="<?php echo Filters::noXSS(CreateURL('notifications', $user->id)); ?>"><?php echo Filters::noXSS($online_notification_num); ?> <?php echo Filters::noXSS(L('notifications')); ?></a>
+              <div id="desc_notifications" class="descbox box">
+            <?php
+            $notifications = Notifications::GetUnreadNotifications($user->id);
+            $i = 0;
+            foreach ($notifications as $note) {
+                if ($i) {
+                    echo '<hr/>';
+                }
+                echo $note['message_subject'];
+                $i++;
+            }
+            ?>
+             </div>
+            </div>
+                
+        </li><?php
 	endif; ?>
 	</ul>
 	<div id="pmcontrol">

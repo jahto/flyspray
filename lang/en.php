@@ -1014,6 +1014,10 @@ Regards,',
 'defaultorderbydirection' => 'Default order by direction',
 'ascending'               => 'Ascending',
 'descending'              => 'Descending',
-'myassignedtasks'         => 'My assigned tasks'
+'myassignedtasks'         => 'My assigned tasks',
+'nonotifications'         => 'There are no notifications.',
+'forgetnotifications'     => 'Forget selected notifications',
+'notifyonline'            => 'Online notifications'
+
 );
 ?>

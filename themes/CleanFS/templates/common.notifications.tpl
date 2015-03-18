@@ -1,8 +1,8 @@
 <div id="toolbox">
-  <h3><?php echo Filters::noXSS(L('pendingrequests')); ?></h3>
+  <h3><?php echo Filters::noXSS(L('notifications')); ?></h3>
   
   <?php if (!count($notifications)): ?>
-  <?php echo Filters::noXSS(L('nopendingreq')); ?>
+  <?php echo Filters::noXSS(L('nonotifications')); ?>
 
   <?php else: ?>
   <?php echo tpl_form(Filters::noXSS(CreateURL('notifications.remove', Req::num('id'), $do))); ?>
@@ -25,7 +25,7 @@
     <?php endforeach; ?>
   </table>
   <input type="hidden" name="action" value="notifications.remove" />
- <button type="submit"><?php echo Filters::noXSS(L('moveuserstogroup')); ?></button>
+ <button type="submit"><?php echo Filters::noXSS(L('forgetnotifications')); ?></button>
   </div>
 </form>
   <?php endif; ?>

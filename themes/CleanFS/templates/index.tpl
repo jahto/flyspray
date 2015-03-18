@@ -280,44 +280,6 @@
     </tr>
     </thead>
     <tbody>
-    <script type="text/javascript">
-	var cX = 0; var cY = 0; var rX = 0; var rY = 0;
-	function UpdateCursorPosition(e){ cX = e.pageX; cY = e.pageY;}
-	function UpdateCursorPositionDocAll(e){ cX = e.clientX; cY = e.clientY;}
-	if(document.all) { document.onmousemove = UpdateCursorPositionDocAll; }
-	else { document.onmousemove = UpdateCursorPosition; }
-	function AssignPosition(d) {
-		if(self.pageYOffset)
-		{
-			rX = self.pageXOffset;
-			rY = self.pageYOffset;
-		}
-		else if(document.documentElement && document.documentElement.scrollTop) {
-			rX = document.documentElement.scrollLeft;
-			rY = document.documentElement.scrollTop;
-		}
-		else if(document.body) {
-			rX = document.body.scrollLeft;
-			rY = document.body.scrollTop;
-		}
-		if(document.all) {
-			cX += rX;
-			cY += rY;
-		}
-		d.style.left = (cX+10) + "px";
-		d.style.top = (cY+10) + "px";
-	}
-	function Show(elem, id)
-	{
-		var div = document.getElementById("desc_"+id);
-		AssignPosition(div);
-		div.style.display = "block";
-	}
-	function Hide(elem, id)
-	{
-		document.getElementById("desc_"+id).style.display = "none";
-	}
-    </script>
     <?php foreach ($tasks as $task_details):?>
     <tr id="task<?php echo $task_details['task_id']; ?>" class="severity<?php echo Filters::noXSS($task_details['task_severity']); ?>" onmouseover="Show(this,<?php echo $task_details['task_id']; ?>)" onmouseout="Hide(this, <?php echo $task_details['task_id']; ?>)">
         <td class="caret">
