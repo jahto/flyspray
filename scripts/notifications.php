@@ -12,7 +12,7 @@ if (!defined('IN_FS')) {
 $notifications = Notifications::GetUnreadNotifications(Get::num('id'));
 
 $page->assign('notifications', $notifications);
-$page->setTitle($fs->prefs['page_title'] . L('viewprofile'));
+$page->setTitle($fs->prefs['page_title'] . L('notifications'));
 $page->pushTpl('common.notifications.tpl');
 
 ?>

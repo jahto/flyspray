@@ -554,11 +554,11 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .= L('newtaskopened') . ". ";
-         $onlineshort .= L('attachedtoproject') . ' - ' .  $task_details['project_title'] . ". ";
-         $onlineshort .= L('summary') . ' - ' . $task_details['item_summary'];
+         $onlineshort .= L('attachedtoproject') . ' - ' .  Filters::noXSS($task_details['project_title']) . ". ";
+         $onlineshort .= L('summary') . ' - ' .  Filters::noXSS($task_details['item_summary']);
 
-         $onlinelong .= L('newtaskopened') . ' ' . tpl_tasklink($task_id) . '<br/>';
-         $onlinelong .= L('attachedtoproject') . ' - ' .  $task_details['project_title'] . '<br/>';
+         $onlinelong .= L('newtaskopened') . ': ' . tpl_tasklink($task_id) . '<br/>';
+         $onlinelong .= L('attachedtoproject') . ' - ' .   Filters::noXSS($task_details['project_title']) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
       } // }}}
       // {{{ Task details changed
@@ -584,10 +584,10 @@ class Notifications {
          $body .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . "\n";
          $body .= L('userwho') . ': ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")\n";
 
-         $onlineshort .= L('taskchangedshort') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'];
+         $onlineshort .= L('taskchangedshort') . ": ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']);
 
-         $onlinelong .= L('taskchangedshort') . ' ' . tpl_tasklink($task_id) . '<br/>';
+         $onlinelong .= L('taskchangedshort') . ': ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
 
          $onlinelong .= '<ul>';
@@ -626,7 +626,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .=  L('notify.taskclosed') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('notify.taskclosed') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -642,7 +642,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .=  L('notify.taskreopened') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('notify.taskreopened') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -661,7 +661,7 @@ class Notifications {
          $body .= CreateURL('details', $depend_task['task_id']) . "\n\n";
 
          $onlineshort .=  L('newdep') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('newdep') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -680,7 +680,7 @@ class Notifications {
          $body .= CreateURL('details', $depend_task['task_id']) . "\n\n";
 
          $onlineshort .= L('notify.depremoved') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('notify.depremoved') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -713,11 +713,11 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . '#comment' . $comment['comment_id'] . "\n\n";
 
          $onlineshort .= L('notify.commentadded') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
          
          $onlinelong .= L('notify.commentadded') . ' <a href="';
          $onlinelong .= CreateURL('details', $task_id) . '#comment' . $comment['comment_id'] . '">';
-         $onlinelong .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . "</a><br/>";
+         $onlinelong .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . "</a><br/>";
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
          // Problem here: don't know how comment_text is formatted!
          // $onlinelong .= $comment['comment_text'] . "<br/>";
@@ -732,7 +732,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .= L('newattachment') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('newattachment') . ' ' . tpl_tasklink($task_id);
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -751,7 +751,7 @@ class Notifications {
          $body .= CreateURL('details', $related_task['task_id']) . "\n\n";
 
          $onlineshort .= L('notify.relatedadded') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('notify.relatedadded') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -765,7 +765,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .= implode(', ', $task_details['assigned_to_name']) . ' ' . L('takenownership') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ".";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ".";
 
          $onlinelong .= implode(', ', $task_details['assigned_to_name']) . ' ' . L('takenownership') . ' ' . tpl_tasklink($task_id) . '<br/>';
       } // }}}
@@ -792,7 +792,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .= L('requiresaction') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
          // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ PM request denied
@@ -807,7 +807,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n";
 
          $onlineshort .= L('pmdeny') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
          // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
       } // }}}
       // {{{ New assignee
@@ -819,9 +819,10 @@ class Notifications {
          $body .= L('moreinfo') . "\n";
          $body .= CreateURL('details', $task_id) . "\n\n";
 
-         $onlineshort .= L('assignedtoyou') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
-         // $online .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . "). ";
+         $onlineshort .= L('assignedtoyou') . ": ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
+
+         $onlinelong .= L('assignedtoyou') . ": " . tpl_tasklink($task_id);
       } // }}}
       // {{{ Reversed dep
       if ($type == NOTIFY_REV_DEP)
@@ -837,7 +838,7 @@ class Notifications {
          $body .= CreateURL('details', $depend_task['task_id']) . "\n\n";
 
          $onlineshort .= L('taskwatching') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('taskwatching') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -856,7 +857,7 @@ class Notifications {
          $body .= CreateURL('details', $depend_task['task_id']) . "\n\n";
 
          $onlineshort .= L('taskwatching') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('taskwatching') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -870,7 +871,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id) . "\n\n\n";
 
          $onlineshort .= L('useraddedtoassignees') . ". ";
-         $onlineshort .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . ". ";
+         $onlineshort .= 'FS#' . $task_id . ' - ' .  Filters::noXSS($task_details['item_summary']) . ". ";
 
          $onlinelong .= L('useraddedtoassignees') . ' ' . tpl_tasklink($task_id) . '<br/>';
          $onlinelong .= L('userwho') . ' - ' . $user->infos['real_name'] . ' (' . $user->infos['user_name'] . ")<br/>";
@@ -882,7 +883,7 @@ class Notifications {
          $body .= CreateURL('details', $task_id, null, array('task_token' => $arg1)) . "\n\n";
 
          $onlineshort .= L('thankyouforbug') . "";
-         $onlineshort .= L('thankyouforbug') . "";
+         $onlinelong .= L('thankyouforbug') . "";
       } // }}}
       // {{{ Password change
       if ($type == NOTIFY_PW_CHANGE)
