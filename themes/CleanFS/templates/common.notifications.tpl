@@ -5,51 +5,28 @@
   <?php echo Filters::noXSS(L('nopendingreq')); ?>
 
   <?php else: ?>
-  <table class="requests">
+  <?php echo tpl_form(Filters::noXSS(CreateURL('notifications.remove', Req::num('id'), $do))); ?>
+   <div>
+  <table id="pending_notifications">
     <tr>
+      <th>
+        <a href="javascript:ToggleSelected('pending_notifications')">
+          <img title="<?php echo Filters::noXSS(L('toggleselected')); ?>" alt="<?php echo Filters::noXSS(L('toggleselected')); ?>" src="<?php echo Filters::noXSS($this->get_image('kaboodleloop')); ?>" width="16" height="16" />
+        </a>
+      </th>
       <th><?php echo Filters::noXSS(L('eventdesc')); ?></th>
-      <!--
-      <th><?php echo Filters::noXSS(L('requestedby')); ?></th>
-      <th><?php echo Filters::noXSS(L('daterequested')); ?></th>
-      <th><?php echo Filters::noXSS(L('emailaddress')); ?></th>
-      <th class="pm-buttons"> </th>
-      -->
     </tr>
     <?php foreach ($notifications as $req): ?>
     <tr>
-      <td>
-      <?php
-      echo $req['message_body'];
-      ?>
+      <td class="ttcolumn"><?php echo tpl_checkbox('message_id[]', true, null, $req['recipient_id']); ?></td>
+      <td><?php echo $req['message_body']; ?>
       </td>
-      <!--
-      <td><?php echo tpl_userlink($req['submitted_by']); ?></td>
-      <td><?php echo Filters::noXSS(formatDate($req['time_submitted'], true)); ?></td>
-      <td>get email adress later</td>
-      <td>
-        <form style="display:inline" action="<?php echo Filters::noXSS(CreateUrl('edituser', $req['submitted_by'])); ?>" method="post">
-	<a class="button" href="#" onclick="this.parentNode.submit();"><?php echo Filters::noXSS(L('accept')); ?></a>
-	<input type="hidden" name="action" value="approve.user"/>
-	<input type="hidden" name="user_id" value="<?php echo $req['submitted_by']; ?>"/>
-	<input type="hidden" name="account_enabled" value="1"/>
-	</form>
-        <a href="#" class="button" onclick="showhidestuff('denyform<?php echo Filters::noXSS($req['request_id']); ?>');"><?php echo Filters::noXSS(L('deny')); ?></a>
-        <div id="denyform<?php echo Filters::noXSS($req['request_id']); ?>" class="denyform">
-          <form action="" method="post">
-            <div>
-              <input type="hidden" name="action" value="denyuserreq" />
-              <input type="hidden" name="req_id" value="<?php echo Filters::noXSS($req['request_id']); ?>" />
-              <label for="deny_reason<?php echo Filters::noXSS($req['request_id']); ?>" class="inline"><?php echo Filters::noXSS(L('reasonfordeinal')); ?></label><br />
-              <textarea cols="40" rows="5" name="deny_reason" id="deny_reason<?php echo Filters::noXSS($req['request_id']); ?>"></textarea>
-              <br />
-              <button type="submit"><?php echo Filters::noXSS(L('deny')); ?></button>
-            </div>
-          </form>
-        </div>
-      </td>
-      -->
     </tr>
     <?php endforeach; ?>
   </table>
+  <input type="hidden" name="action" value="notifications.remove" />
+ <button type="submit"><?php echo Filters::noXSS(L('moveuserstogroup')); ?></button>
+  </div>
+</form>
   <?php endif; ?>
 </div>

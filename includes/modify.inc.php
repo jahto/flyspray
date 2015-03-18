@@ -2374,7 +2374,7 @@ switch ($action = Req::val('action'))
             break;
         }
         
-        if (!$count($_POST['message_id'])) {
+        if (!count($_POST['message_id'])) {
             // Nothing to do.
             break;
         }
@@ -2382,13 +2382,13 @@ switch ($action = Req::val('action'))
         $validids = array();
         foreach ($_POST['message_id'] as $id) {
             if (is_numeric($id)) {
-                if (settype($id, 'int') && id > 0) {
+                if (settype($id, 'int') && $id > 0) {
                     $validids[] = $id;
                 }
             }
         }
 
-        if (!$count($validids)) {
+        if (!count($validids)) {
             // Nothing to do.
             break;
         }

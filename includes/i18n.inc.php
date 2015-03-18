@@ -10,6 +10,10 @@ require_once BASEDIR . '/lang/en.php';
  * get the language string $key
  * return string
  */
+// TODO: this needs an additional argument for formatting
+// notifications, both mailed and online. Now everything
+// uses the language of the user who made something, not
+// the preferred language of receiver...
 function L($key){
     global $language;
     if (empty($key)) {
