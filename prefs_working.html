@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+  <head>
+    <title>Exdec - Bug Tracker  Project Manager&#039;s Toolbox</title>
+
+    <meta name="description" content="Flyspray, a Bug Tracking System written in PHP." />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+        <link rel="index" id="indexlink" type="text/html" href="http://localhost:8080/myflyspray/" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=27" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=1" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=7" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=16" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=17" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=22" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=23" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=18" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=20" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=19" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=21" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=14" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=15" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=6" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=13" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=25" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=24" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=26" />
+        <link rel="section" type="text/html" href="http://localhost:8080/myflyspray/?project=28" />
+        <link media="screen" href="http://localhost:8080/myflyspray/themes/CleanFS/theme.css" rel="stylesheet" type="text/css" />
+    <link media="print"  href="http://localhost:8080/myflyspray/themes/CleanFS/theme_print.css" rel="stylesheet" type="text/css" />
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="alternate" type="application/rss+xml" title="Flyspray RSS 1.0 Feed"
+          href="http://localhost:8080/myflyspray/feed.php?feed_type=rss1&amp;project=17" />
+    <link rel="alternate" type="application/rss+xml" title="Flyspray RSS 2.0 Feed"
+          href="http://localhost:8080/myflyspray/feed.php?feed_type=rss2&amp;project=17" />
+	<link rel="alternate" type="application/atom+xml" title="Flyspray Atom 0.3 Feed"
+	      href="http://localhost:8080/myflyspray/feed.php?feed_type=atom&amp;project=17" />
+
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/prototype/prototype.js"></script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/script.aculo.us/scriptaculous.js"></script>
+                <script type="text/javascript" src="http://localhost:8080/myflyspray/js/tablecontrol.js"></script>
+            <script type="text/javascript" src="http://localhost:8080/myflyspray/js/tabs.js"></script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/functions.js"></script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/jscalendar/calendar_stripped.js"></script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/jscalendar/calendar-setup_stripped.js"> </script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/jscalendar/lang/calendar-en.js"></script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/lightbox/js/lightbox.js"></script>
+    <script type="text/javascript" src="http://localhost:8080/myflyspray/js/ckeditor/ckeditor.js"></script>    <link rel="stylesheet" href="http://localhost:8080/myflyspray/js/lightbox/css/lightbox.css" type="text/css" media="screen" />
+    <!--[if IE]>
+    <link media="screen" href="http://localhost:8080/myflyspray/themes/CleanFS/ie.css" rel="stylesheet" type="text/css" />
+    <![endif]-->
+      </head>
+  <body onload="" class="pm">
+
+    <!-- Display title and logo if desired -->
+    <h1 id="title"><a href="http://localhost:8080/myflyspray/">
+			<img src="http://localhost:8080/myflyspray//flyspray.png" />
+		Exdec - BackOfficer
+    </a></h1>
+
+    <div id="menu"><ul id="menu-list"><li class="first"><a id="profilelink"  href="http://localhost:8080/myflyspray/index.php?do=myprofile" title="Edit my details">Jouni Ahto (exjouni)</a>
+	</li><li>
+		<a id="lastsearchlink" href="#" accesskey="m" onclick="showhidestuff('mysearches');return false;" class="inactive">My searches</a>
+		<div id="mysearches">    <strong id="nosearches" class="hide">No saved searches</strong>
+        <table id="mysearchestable">
+        <tr id="rs71" >
+      <td><a href="http://localhost:8080/myflyspray/?do=index&amp;">271</a></td>
+      <td class="searches_delete">
+        <a href="javascript:deletesearch('71','http://localhost:8080/myflyspray/')">
+        <img src="http://localhost:8080/myflyspray/themes/CleanFS/button_cancel.png" width="12" height="12" title="Delete" alt="Delete" /></a>
+      </td>
+    </tr>
+        <tr id="rs56" >
+      <td><a href="http://localhost:8080/myflyspray/?do=index&amp;type%5B0%5D=&amp;sev%5B0%5D=&amp;due%5B0%5D=&amp;dev=13&amp;cat%5B0%5D=&amp;status%5B0%5D=open&amp;percent%5B0%5D=&amp;reported%5B0%5D=">Tasks assigned to me</a></td>
+      <td class="searches_delete">
+        <a href="javascript:deletesearch('56','http://localhost:8080/myflyspray/')">
+        <img src="http://localhost:8080/myflyspray/themes/CleanFS/button_cancel.png" width="12" height="12" title="Delete" alt="Delete" /></a>
+      </td>
+    </tr>
+        <tr id="rs57" >
+      <td><a href="http://localhost:8080/myflyspray/?do=index&amp;type%5B0%5D=&amp;sev%5B0%5D=&amp;due%5B0%5D=&amp;cat%5B0%5D=&amp;status%5B0%5D=open&amp;percent%5B0%5D=&amp;opened=13&amp;reported%5B0%5D=">Tasks I opened</a></td>
+      <td class="searches_delete">
+        <a href="javascript:deletesearch('57','http://localhost:8080/myflyspray/')">
+        <img src="http://localhost:8080/myflyspray/themes/CleanFS/button_cancel.png" width="12" height="12" title="Delete" alt="Delete" /></a>
+      </td>
+    </tr>
+        <tr id="rs55" class="last">
+      <td><a href="http://localhost:8080/myflyspray/?do=index&amp;type%5B0%5D=&amp;sev%5B0%5D=&amp;due%5B0%5D=&amp;cat%5B0%5D=&amp;status%5B0%5D=open&amp;percent%5B0%5D=&amp;reported%5B0%5D=&amp;only_watched=1">Tasks I watch</a></td>
+      <td class="searches_delete">
+        <a href="javascript:deletesearch('55','http://localhost:8080/myflyspray/')">
+        <img src="http://localhost:8080/myflyspray/themes/CleanFS/button_cancel.png" width="12" height="12" title="Delete" alt="Delete" /></a>
+      </td>
+    </tr>
+        </table>
+    </div>
+	</li><li>
+		<a id="logoutlink" href="http://localhost:8080/myflyspray/index.php?do=authenticate&amp;logout=1"
+		accesskey="l">Logout</a>
+	</li></ul>
+</div><div id="pm-menu">
+	<ul id="pm-menu-list"><li class="first">
+		<a id="toplevellink"
+				href="http://localhost:8080/myflyspray/index.php?do=toplevel&amp;project=17">Overview</a>
+	</li><li>
+		<a id="homelink"
+				href="http://localhost:8080/myflyspray/index.php?project=17">Tasklist</a>
+	</li><li>
+		<a id="newtasklink" href="http://localhost:8080/myflyspray/index.php?do=newtask&amp;project=17"
+				accesskey="a">Add new task</a>
+	</li><li>
+		<a id="newmultitaskslink" href="http://localhost:8080/myflyspray/index.php?do=newmultitasks&amp;project=17"
+				accesskey="a">Add multiple tasks</a>
+		</li><li>
+		<a id="mytaskslink"
+				href="http://localhost:8080/myflyspray/index.php?do=index&amp;project=17&amp;dev=13">My assigned tasks</a>
+	</li><li>
+		<a id="reportslink"
+				href="http://localhost:8080/myflyspray/index.php?do=reports">Event log</a>
+	</li><li>
+		<a id="roadmaplink"
+				href="http://localhost:8080/myflyspray/index.php?do=roadmap&amp;project=17">Roadmap</a>
+	</li>
+	<li>
+		<a id="projectslink"
+		 class="active" 		href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=prefs&amp;project=17">Manage Project</a>
+	</li>
+		</ul>
+	<div id="pmcontrol">
+		<div id="projectselector">
+			<form id="projectselectorform" action="http://localhost:8080/myflyspray/index.php" method="get">
+				<select name="project" onchange="document.getElementById('projectselectorform').submit()">
+				<option value="0">All Projects</option><option value="27">Apelia .NET (SHB 455)</option><option value="1">Default Project</option><option value="7">EX-Internal</option><option value="16">Exdec - Allogator</option><option value="17" selected="selected">Exdec - BackOfficer</option><option value="22">Exdec - Basket Client</option><option value="23">Exdec - Basket Server</option><option value="18">Exdec - MIBS</option><option value="20">Exdec - MQ-veloitus</option><option value="19">Exdec - Pusher</option><option value="21">Exdec - Säksätin</option><option value="14">FINIB - Kiva</option><option value="15">LAI - BackOfficer</option><option value="6">MDT - WinReski</option><option value="13">MiFID</option><option value="25">PNET - Apelia</option><option value="24">SHB - Apelia</option><option value="26">SHB - WinOptio</option><option value="28">SHB (401) - Ares</option>				</select>
+				<button type="submit">Switch</button>
+				<input type="hidden" name="do" value="pm" />
+				<input type="hidden" value="1" name="switch" />
+									<input type="hidden" name="area" value="prefs" />
+								</form>
+		</div>
+		<div id="showtask">
+			<form action="http://localhost:8080/myflyspray/index.php" method="get">
+				<button type="submit">Show Task #</button>
+				<input id="task_id" name="show_task" class="text" type="text" size="10" accesskey="t" />
+			</form>
+		</div>
+	</div>
+</div>
+
+    
+    <div id="content">
+      <div class="clear"></div>
+
+      
+	  	          
+
+<div id="toolboxmenu">
+  <a id="projprefslink"
+      class="active"      href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=prefs&amp;project=17">Preferences</a>
+  <a id="projuglink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=groups&amp;project=17">User Groups</a>
+  <a id="projttlink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=tasktype&amp;project=17">Task Types</a>
+  <a id="projstatuslink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=status&amp;project=17">Task Statuses</a>
+  <a id="projreslink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=resolution&amp;project=17">Resolutions</a>
+  <a id="projcatlink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=cat&amp;project=17">Categories</a>
+  <a id="projoslink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=os&amp;project=17">Operating Systems</a>
+  <a id="projverlink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=version&amp;project=17">Versions</a>
+  <a id="projreqlink"
+          href="http://localhost:8080/myflyspray/index.php?do=pm&amp;area=pendingreq&amp;project=17">Pending Requests</a>
+</div>
+<div id="toolbox">
+  <h3>Exdec - BackOfficer : Preferences</h3>
+
+  <form action="http://localhost:8080/myflyspray/index.php?do=pm&area=prefs&project=17" method="post" enctype="multipart/form-data" ><input type="hidden" name="csrftoken" value="20497" />  <ul id="submenu">
+   <li><a href="#general">General</a></li>
+   <li><a href="#lookandfeel">Look and Feel</a></li>
+   <li><a href="#notifications">Notifications</a></li>
+   <li><a href="#feeds">Feeds</a></li>
+   <li><a href="#effort">Effort Tracking</a></li>
+  </ul>
+
+  <div id="general" class="tab">
+      <ul class="form_elements wide">
+        <li>
+          <label for="projecttitle">Project Title</label>
+          <input id="projecttitle" name="project_title" class="text" type="text" size="40" maxlength="100"
+            value="Exdec - BackOfficer" />
+        </li>
+
+        <li>
+          <label for="defaultcatowner">Default category owner</label>
+          <input class="users text"  type="text" name="default_cat_owner" id="defaultcatowner" value="" />
+<span class="autocomplete" id="default_cat_owner_complete"></span>
+<script type="text/javascript">
+    showstuff('default_cat_owner_complete');
+    new Ajax.Autocompleter('defaultcatowner', 'default_cat_owner_complete', 'http://localhost:8080/myflyspray/js/callbacks/usersearch.php', {})
+</script>
+
+        </li>
+
+        <li>
+          <label for="langcode">Language</label>
+          <select id="langcode" name="lang_code">
+            <option value="bg">bg</option><option value="de">de</option><option value="dk">dk</option><option value="en" selected="selected">en</option><option value="es">es</option><option value="fr">fr</option><option value="he">he</option><option value="hu">hu</option><option value="it">it</option><option value="ja">ja</option><option value="mk">mk</option><option value="nl">nl</option><option value="pl">pl</option><option value="pt_br">pt_br</option><option value="pt_pt">pt_pt</option><option value="ru">ru</option><option value="sk">sk</option><option value="sr">sr</option><option value="sr_lat">sr_lat</option><option value="sv_SE">sv_SE</option><option value="zh_cn">zh_cn</option>
+          </select>
+        </li>
+
+        <li>
+          <label>Pages where to show intro message</label>
+          <div class="double_select">
+  <select class="dualselect_selectable" id="l_task_id_0" multiple="multiple"
+        ondblclick="dualSelect(this, 'r', '_task_id_0')"><option title="Top level view" value="toplevel">Top level view</option><option title="Add multiple tasks" value="newmultitasks">Add multiple tasks</option><option title="Details" value="details">Details</option><option title="Roadmap" value="roadmap">Roadmap</option><option title="New Task" value="newtask">New Task</option><option title="Event log" value="reports">Event log</option><option title="Dependency graph" value="depends">Dependency graph</option><option title="Manage Project" value="pm">Manage Project</option></select>
+  <div class="dualselect_buttons">
+    <button type="button" onmouseup="dualSelect('l', 'r', '_task_id_0')">Add &#8594;</button>
+    <button type="button" onmouseup="dualSelect('r', 'l', '_task_id_0')">&#8592; Remove</button>
+  </div>
+  <div class="dualselect_selected">
+                <select id="r_task_id_0" multiple="multiple"
+          ondblclick="dualSelect(this, 'l', '_task_id_0')"><option title="Tasklist" value="index">Tasklist</option></select>
+                <input type="hidden" value="index" id="v_task_id_0" name="pages_intro_msg" />
+      </div>
+  <div class="clear"></div>
+</div>
+        </li>
+
+        <li>
+          <label for="intromesg">Introductory message</label>
+                    <textarea name="intro_message" cols="70" rows="8" accesskey = "r" tabindex = "8" id = "intromesg">&lt;p&gt;Siirrä tänne kaikki BackOfficer-kamat, kun asiakkaasta tulee entinen ja tiedot pitää poistaa.&lt;/p&gt;
+</textarea><script>
+                        CKEDITOR.replace( 'intro_message', { entities: true, entities_latin: false, entities_processNumerical: false } );
+                    </script>
+          <br />
+                  </li>
+
+        <li>
+          <label for="default_task">Default task description</label>
+                    <textarea name="default_task" cols="70" rows="8" accesskey = "r" tabindex = "8" id = "default_task"></textarea><script>
+                        CKEDITOR.replace( 'default_task', { entities: true, entities_latin: false, entities_processNumerical: false } );
+                    </script>
+          <br />
+                  </li>
+
+        <li>
+          <label for="isactive">Project is active</label>
+          <input type="checkbox" name="project_is_active" value="1" id="isactive" checked="checked" />
+        </li>
+
+        <li>
+          <label for="disp_intro">Display main introductory message</label>
+          <input type="checkbox" name="disp_intro" value="1" id="disp_intro" />
+        </li>
+
+        <li>
+          <label><input type="checkbox" name="delete_project" value="1" /> Delete this project and move contents to</label>
+          <select name="move_to"><option value="0">None</option><option value="1">Default Project</option><option value="6">MDT - WinReski</option><option value="7">EX-Internal</option><option value="13">MiFID</option><option value="14">FINIB - Kiva</option><option value="15">LAI - BackOfficer</option><option value="16">Exdec - Allogator</option><option value="18">Exdec - MIBS</option><option value="19">Exdec - Pusher</option><option value="20">Exdec - MQ-veloitus</option><option value="21">Exdec - Säksätin</option><option value="22">Exdec - Basket Client</option><option value="23">Exdec - Basket Server</option><option value="24">SHB - Apelia</option><option value="25">PNET - Apelia</option><option value="26">SHB - WinOptio</option><option value="27">Apelia .NET (SHB 455)</option><option value="28">SHB (401) - Ares</option></select>
+        </li>
+
+        <li>
+          <label for="othersview">Allow anyone to view this project</label>
+          <input type="checkbox" name="others_view" value="1" id="othersview" />
+        </li>
+
+        <li>
+          <label for="anon_open">Allow anonymous users to open tasks</label>
+          <input type="checkbox" name="anon_open" value="1" id="anon_open" />
+        </li>
+
+        <li>
+          <label for="comment_closed">Allow comments on closed tasks</label>
+          <input type="checkbox" name="comment_closed" value="1" id="comment_closed" />
+        </li>
+
+        <li>
+          <label for="auto_assign">Auto-assign a task to the category owner</label>
+          <input type="checkbox" name="auto_assign" value="1" id="auto_assign" />
+        </li>
+
+        <li>
+          <label for="defaultdueversion">Default due in Version for new tasks</label>
+          <select id="defaultdueversion" name="default_due_version">
+              <option value="0">Undecided</option>
+              <option value="0">---</option>
+          </select>
+        </li>
+      </ul>
+    </div>
+
+    <div id="lookandfeel" class="tab">
+      <ul class="form_elements wide">
+        <li>
+          <label for="themestyle">Theme / Style</label>
+          <select id="themestyle" name="theme_style">
+            <option value="CleanFS" selected="selected">CleanFS</option>          </select>
+        </li>
+
+        <li>
+          <label for="default_entry">Default entry page</label>
+          <select id="default_entry" name="default_entry">
+            <option value="index" selected="selected">Tasklist</option><option value="toplevel">Top level view</option><option value="roadmap">Roadmap</option>          </select>
+        </li>
+
+        
+        <li>
+          <label>Order tasklist by default by</label>
+          <select id="default_order_by" name="default_order_by">
+            <option value="id" selected="selected">ID</option><option value="parent">Parent</option><option value="tasktype">Task Type</option><option value="category">Category</option><option value="severity">Severity</option><option value="priority">Priority</option><option value="summary">Summary</option><option value="dateopened">Opened</option><option value="status">Status</option><option value="openedby">Opened by</option><option value="private">Private</option><option value="assignedto">Assigned To</option><option value="lastedit">Last Edited</option><option value="reportedin">Reported In</option><option value="dueversion">Due In Version</option><option value="duedate">Due Date</option><option value="comments">Comments</option><option value="attachments">Attachments</option><option value="progress">Progress</option><option value="dateclosed">Date closed</option><option value="os">Operating System</option><option value="votes">Votes</option><option value="estimatedeffort">Estimated Effort</option><option value="effort">Effort</option>          </select>
+        </li>
+
+        <li>
+          <label>Default order by direction</label>
+          <select id="default_order_by_dir" name="default_order_by_dir">
+            <option value="asc">Ascending</option><option value="desc" selected="selected">Descending</option>          </select>
+        </li>
+
+        <li>
+          <label>Columns displayed in task list</label>
+          <div class="double_select">
+  <select class="dualselect_selectable" id="l_task_id_1" multiple="multiple"
+        ondblclick="dualSelect(this, 'r', '_task_id_1')"><option title="Parent" value="parent">Parent</option><option title="Priority" value="priority">Priority</option><option title="Opened" value="dateopened">Opened</option><option title="Opened by" value="openedby">Opened by</option><option title="Private" value="private">Private</option><option title="Assigned To" value="assignedto">Assigned To</option><option title="Last Edited" value="lastedit">Last Edited</option><option title="Reported In" value="reportedin">Reported In</option><option title="Due In Version" value="dueversion">Due In Version</option><option title="Due Date" value="duedate">Due Date</option><option title="Comments" value="comments">Comments</option><option title="Attachments" value="attachments">Attachments</option><option title="Date closed" value="dateclosed">Date closed</option><option title="Operating System" value="os">Operating System</option><option title="Votes" value="votes">Votes</option><option title="Estimated Effort" value="estimatedeffort">Estimated Effort</option><option title="Effort" value="effort">Effort</option></select>
+  <div class="dualselect_buttons">
+    <button type="button" onmouseup="dualSelect('l', 'r', '_task_id_1')">Add &#8594;</button>
+    <button type="button" onmouseup="dualSelect('r', 'l', '_task_id_1')">&#8592; Remove</button>
+  </div>
+  <div class="dualselect_selected">
+        <button type="button" onmouseup="selectMove('_task_id_1', -1)">&#8593;</button><br />        <select id="r_task_id_1" multiple="multiple"
+          ondblclick="dualSelect(this, 'l', '_task_id_1')"><option title="ID" value="id">ID</option><option title="Category" value="category">Category</option><option title="Task Type" value="tasktype">Task Type</option><option title="Severity" value="severity">Severity</option><option title="Summary" value="summary">Summary</option><option title="Status" value="status">Status</option><option title="Progress" value="progress">Progress</option></select>
+        <button type="button" onmouseup="selectMove('_task_id_1', 1)">&#8595;</button>        <input type="hidden" value="id project category tasktype severity summary status progress" id="v_task_id_1" name="visible_columns" />
+      </div>
+  <div class="clear"></div>
+</div>
+        </li>
+
+        <li>
+          <label>Fields when add/edit/view task</label>
+                    <div class="double_select">
+  <select class="dualselect_selectable" id="l_task_id_2" multiple="multiple"
+        ondblclick="dualSelect(this, 'r', '_task_id_2')"><option title="Parent" value="parent">Parent</option></select>
+  <div class="dualselect_buttons">
+    <button type="button" onmouseup="dualSelect('l', 'r', '_task_id_2')">Add &#8594;</button>
+    <button type="button" onmouseup="dualSelect('r', 'l', '_task_id_2')">&#8592; Remove</button>
+  </div>
+  <div class="dualselect_selected">
+        <button type="button" onmouseup="selectMove('_task_id_2', -1)">&#8593;</button><br />        <select id="r_task_id_2" multiple="multiple"
+          ondblclick="dualSelect(this, 'l', '_task_id_2')"><option title="Task Type" value="tasktype">Task Type</option><option title="Category" value="category">Category</option><option title="Severity" value="severity">Severity</option><option title="Priority" value="priority">Priority</option><option title="Status" value="status">Status</option><option title="Private" value="private">Private</option><option title="Assigned To" value="assignedto">Assigned To</option><option title="Reported In" value="reportedin">Reported In</option><option title="Due In Version" value="dueversion">Due In Version</option><option title="Due Date" value="duedate">Due Date</option><option title="Progress" value="progress">Progress</option><option title="Operating System" value="os">Operating System</option><option title="Votes" value="votes">Votes</option></select>
+        <button type="button" onmouseup="selectMove('_task_id_2', 1)">&#8595;</button>        <input type="hidden" value="tasktype category severity priority status private assignedto reportedin dueversion duedate progress os votes" id="v_task_id_2" name="visible_fields" />
+      </div>
+  <div class="clear"></div>
+</div>
+
+        </li>
+      </ul>
+    </div>
+
+    <div id="notifications" class="tab">
+      <ul class="form_elements">
+        <li>
+          <label for="notify_subject">Subject for notifications</label>
+          <input id="notify_subject" class="text" name="notify_subject" type="text" size="40" value="" />
+          <br /><span class="note">(%p = project title, %s = task summary, %t = task id, %a = action, %u = user)</span>
+        </li>
+
+        <li>
+          <label for="emailaddress">Email Address</label>
+          <input id="emailaddress" name="notify_email" class="text" type="text" value="jahto@welho.com, jarmo.levo@iki.fi" />
+        </li>
+
+        
+        <li>
+          <label for="notify_reply">Reply to</label>
+          <input id="notify_reply" name="notify_reply" class="text" type="text" value="" />
+        </li>
+
+        <li>
+          <label for="notify_types">Notification types</label>
+          <select id="notify_types" size="10" multiple="multiple" name="notify_types[]">
+          <option value="0">None</option><option value="1" selected="selected">Task opened</option><option value="2" selected="selected">Task changed</option><option value="3" selected="selected">Task closed</option><option value="4" selected="selected">Task reopened</option><option value="5" selected="selected">Dependency added</option><option value="6" selected="selected">Dependency removed</option><option value="7" selected="selected">Comment added</option><option value="8" selected="selected">Attachment added</option><option value="9" selected="selected">Related task added</option><option value="10" selected="selected">User took ownership</option><option value="12" selected="selected">PM request</option><option value="13" selected="selected">PM request denied</option><option value="14" selected="selected">New assignee</option><option value="15" selected="selected">Reverse dependency added</option><option value="16" selected="selected">Reverse dependency removed</option><option value="17" selected="selected">Assignee added</option>
+          </select>
+        </li>
+      </ul>
+    </div>
+
+    <div id="feeds" class="tab">
+      <ul class="form_elements">
+        <li>
+          <label for="feed_description">Feed description</label>
+          <input id="feed_description" class="text" name="feed_description" type="text" value="" />
+        </li>
+
+        <li>
+          <label for="feed_img_url">Feed image URL (leave blank for no image)</label>
+          <input id="feed_img_url" class="text" name="feed_img_url" type="text" value="" />
+        </li>
+      </ul>
+    </div>
+
+  <div id="effort" class="tab">
+      <ul class="form_elements">
+          <li>
+              <label for="useeffort">Project Uses Effort Tracking</label>
+              <input type="checkbox" name="use_effort_tracking" value="1" id="useeffort" />
+          </li>
+          <li>
+              <label for="hours_per_manday">Hours per one manday (HH:mm)</label>
+              <input id="hours_per_manday" class="text" name="hours_per_manday" type="text"
+                     value="0:00" />
+          </li>
+        <li>
+          <label for="estimated_effort_format">Estimated effort display format</label>
+          <select id="estimated_effort_format" name="estimated_effort_format">
+            <option value="0" selected="selected">hours:minutes</option><option value="1">hours minutes</option><option value="2">hours</option><option value="3">hours (one decimal)</option><option value="4">minutes</option><option value="5">man-days</option><option value="6">man-days (one decimal)</option><option value="7">man-days hours</option><option value="8">man-days hours (one decimal)</option><option value="9">man-days hours:minutes</option><option value="10">man-days hours minutes</option>          </select>
+        </li>
+        <li>
+          <label for="current_effort_done_format">Current effort done display format</label>
+          <select id="current_effort_done_format" name="current_effort_done_format">
+            <option value="0" selected="selected">hours:minutes</option><option value="1">hours minutes</option><option value="2">hours</option><option value="3">hours (one decimal)</option><option value="4">minutes</option><option value="5">man-days</option><option value="6">man-days (one decimal)</option><option value="7">man-days hours</option><option value="8">man-days hours (one decimal)</option><option value="9">man-days hours:minutes</option><option value="10">man-days hours minutes</option>          </select>
+        </li>
+      </ul>
+  </div>
+
+    <div class="tbuttons">
+      <input type="hidden" name="action" value="pm.updateproject" />
+      <input type="hidden" name="project_id" value="17" />
+      <button type="submit">Save Options</button>
+
+      <button type="reset">Reset Options</button>
+    </div>
+  </form>
+
+</div>
+    <div>
+    <p id="footer">
+       <!-- Please don't remove this line - it helps promote Flyspray -->
+       <a href="http://flyspray.org/" class="offsite">Powered by Flyspray</a><br/>
+       <i><a href="http://www.thevelozgroup.com">Flyspray is proudly sponsored by The Veloz Group</a></i>
+    </p>
+    </div>
+  </body>
+</html>

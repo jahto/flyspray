@@ -36,35 +36,39 @@ class Notifications {
         $jabbers = array();
         $onlines = array();
         
-        foreach ($to as $recipient) {
+        foreach ($to[0] as $recipient) {
             // echo "<pre>".var_dump($recipient)."</pre>";
 
-            if (isset($recipient[0])) {
-                $lang = $recipient[0]['lang'];
-                if ($lang == 'j')
-                    echo "<pre>Error 1!</pre>";
-                $emails[$lang][] = $recipient[0]['recipient'];
-                if (!in_array($lang, $languages)) {
-                    $languages[] = $lang;
-                }
+            $lang = $recipient['lang'];
+            if ($lang == 'j')
+                echo "<pre>Error 1!</pre>";
+            $emails[$lang][] = $recipient['recipient'];
+            if (!in_array($lang, $languages)) {
+                $languages[] = $lang;
             }
-            if (isset($recipient[1])) {
-                $lang = $recipient[1]['lang'];
-                if ($lang == 'j')
-                    echo "<pre>Error 2!</pre>";
-                $jabbers[$lang][] = $recipient[1]['recipient'];
-                if (!in_array($lang, $languages)) {
-                    $languages[] = $lang;
-                }
+        }
+
+        foreach ($to[1] as $recipient) {
+            // echo "<pre>".var_dump($recipient)."</pre>";
+
+            $lang = $recipient['lang'];
+            if ($lang == 'j')
+                echo "<pre>Error 2!</pre>";
+            $jabbers[$lang][] = $recipient['recipient'];
+            if (!in_array($lang, $languages)) {
+                $languages[] = $lang;
             }
-            if (isset($recipient[2])) {
-                $lang = $recipient[2]['lang'];
-                if ($lang == 'j')
-                    echo "<pre>Error 3!</pre>";
-                $onlines[$lang][] = $recipient[2]['recipient'];
-                if (!in_array($lang, $languages)) {
-                    $languages[] = $lang;
-                }
+        }
+
+        foreach ($to[2] as $recipient) {
+            // echo "<pre>".var_dump($recipient)."</pre>";
+
+            $lang = $recipient['lang'];
+            if ($lang == 'j')
+                echo "<pre>Error 3!</pre>";
+            $onlines[$lang][] = $recipient['recipient'];
+            if (!in_array($lang, $languages)) {
+                $languages[] = $lang;
             }
         }
 
@@ -78,7 +82,7 @@ class Notifications {
         foreach ($languages as $lang) {
             $msg = $this->GenerateMsg($type, $task_id, $info, $lang);
             if (isset($emails[$lang]) && ($ntype == NOTIFY_EMAIL || $ntype == NOTIFY_BOTH)) {
-                if (!$this->SendEmail((is_array($emails[$lang][0]) ? $emails[$lang][0] : $emails[$lang]), $msg[0], $msg[1], $task_id)) {
+                if (!$this->SendEmail($emails[$lang], $msg[0], $msg[1], $task_id)) {
                     $result = false;
                 }
             }
@@ -991,18 +995,18 @@ class Notifications {
 
             if (($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_EMAIL || $user_details['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2' || $ignoretype) {
                 if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    array_push($email_users, array('recipient' => $user_details['email_address'], 'lang' => $user_details['lang_code']));
+                    $email_users[$user_details['user_id']] = array('recipient' => $user_details['email_address'], 'lang' => $user_details['lang_code']);
                 }
             }
 
             if (($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_JABBER || $user_details['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3' || $ignoretype) {
                 if (isset($row['jabber_id']) && !empty($row['jabber_id'] && $row['jabber_id'])) {
-                    array_push($jabber_users, array('recipient' => $user_details['jabber_id'], 'lang' => $user_details['lang_code']));
+                    $jabber_users[$user_details['user_id']] = array('recipient' => $user_details['jabber_id'], 'lang' => $user_details['lang_code']);
                 }
             }
 
             if ($fs->prefs['user_notify'] == '1' && $user_details['notify_online']) {
-                array_push($online_users, array('recipient' => $user_details['user_id'], 'lang' => $user_details['lang_code']));
+                $online_users[$user_details['user_id']] = array('recipient' => $user_details['user_id'], 'lang' => $user_details['lang_code']);
             }
         }
 
@@ -1036,20 +1040,20 @@ class Notifications {
 
             if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2') {
                 if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    array_push($email_users, array('recipient' => $row['email_address'], 'lang' => $row['lang_code']));
+                    $email_users[$row['user_id']] = array('recipient' => $row['email_address'], 'lang' => $row['lang_code']);
                 }
             }
 
             if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3') {
                 if (isset($row['jabber_id']) && !empty($row['jabber_id']) && $row['jabber_id']) {
-                    array_push($jabber_users, array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']));
+                    $jabber_users[$row['user_id']] = array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']);
                 }
             }
 
             // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
             //    || $fs->prefs['user_notify'] == '4')
             if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
-                array_push($online_users, array('recipient' => $row['user_id'], 'lang' => $row['lang_code']));
+                $online_users[$row['user_id']] = array('recipient' => $row['user_id'], 'lang' => $row['lang_code']);
             }
         }
 
@@ -1066,20 +1070,20 @@ class Notifications {
 
             if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2') {
                 if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    array_push($email_users, array('recipient' => $row['email_address'], 'lang' => $row['lang_code']));
+                    $email_users[$row['user_id']] = array('recipient' => $row['email_address'], 'lang' => $row['lang_code']);
                 }
             }
 
             if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3') {
                 if (isset($row['jabber_id']) && !empty($row['jabber_id']) && $row['jabber_id']) {
-                    array_push($jabber_users, array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']));
+                    $jabber_users[$row['user_id']] = array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']);
                 }
             }
 
             // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
             //    || $fs->prefs['user_notify'] == '4')
             if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
-                array_push($online_users, array('recipient' => $row['user_id'], 'lang' => $row['lang_code']));
+                $online_users[$row['user_id']] = array('recipient' => $row['user_id'], 'lang' => $row['lang_code']);
             }
         }
 
@@ -1087,6 +1091,7 @@ class Notifications {
         // ...but only if the task is public
         if ($task_details['mark_private'] != '1' && in_array($type, Flyspray::int_explode(' ', $proj->prefs['notify_types']))) {
             // FIXME! Have to find users preferred language here too, must fetch from database.
+            /*
             $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
             $proj_jids = explode(',', $proj->prefs['notify_jabber']);
 
@@ -1106,7 +1111,7 @@ class Notifications {
                     array_push($jabber_users, $val);
                 }
             }
-
+            */
             // No online notifications?
             // End of checking if a task is private
         }
