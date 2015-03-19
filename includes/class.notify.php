@@ -12,7 +12,7 @@
  * @package
  * @version $Id$
  * @copyright 2006 Flyspray.org
- * @notes: This is a mess and should be replaced for 1.0
+ * @notes: This is a mess and should be replaced for 1.0. Yes, I understand now and will definitely rewrite this for 1.1.
  */
 
 class Notifications {
@@ -28,14 +28,50 @@ class Notifications {
           settype($to, 'array');
       }
 
-      // echo "<pre>";
-      // echo var_dump($to);
-      // echo "</pre>";
-
       if (!count($to)) {
         return false;
       }
-      $msg = $this->GenerateMsg($type, $task_id, $info);
+      
+      $languages = array();
+      $emails = array();
+      $jabbers = array();
+      $onlines = array();
+      foreach ($to as $recipient) {
+          // echo "<pre>".var_dump($recipient)."</pre>";
+
+          if (isset($recipient[0])) {
+              $lang = $recipient[0]['lang'];
+              if ($lang == 'j') echo "<pre>Error 1!</pre>";
+              $emails[$lang][] = $recipient[0]['recipient'];
+              if (!in_array($lang, $languages)) {
+                  $languages[] = $lang;
+              }
+          }
+          if (isset($recipient[1])) {
+              $lang = $recipient[1]['lang'];
+              if ($lang == 'j') echo "<pre>Error 2!</pre>";
+              $jabbers[$lang][] = $recipient[1]['recipient'];
+              if (!in_array($lang, $languages)) {
+                  $languages[] = $lang;
+              }
+          }
+          if (isset($recipient[2])) {
+              $lang = $recipient[2]['lang'];
+              if ($lang == 'j') echo "<pre>Error 3!</pre>";
+              $onlines[$lang][] = $recipient[2]['recipient'];
+              if (!in_array($lang, $languages)) {
+                  $languages[] = $lang;
+              }
+          }
+      }
+
+      foreach ($languages as $lang) {
+          echo "<pre>$lang</pre>";
+      }
+     echo "<pre>".var_dump($emails)."</pre>";
+     echo "<pre>".var_dump($jabbers)."</pre>";
+     echo "<pre>".var_dump($onlines)."</pre>";
+     $msg = $this->GenerateMsg($type, $task_id, $info);
       $result = true;
       if ($ntype == NOTIFY_EMAIL || $ntype == NOTIFY_BOTH) {
           if(!$this->SendEmail((is_array($to[0]) ? $to[0] : $to), $msg[0], $msg[1], $task_id)) {
@@ -418,8 +454,8 @@ class Notifications {
         }
 
         // now accepts string , array or Swift_Address.
-        // echo "<pre>".var_dump($to)."</pre>";
-        // return true;
+        echo "<pre>".var_dump($to)."</pre>";
+        return true;
         $message->setTo($to['recipient']);
         $message->setFrom(array($fs->prefs['admin_email'] => $proj->prefs['project_title']));
         $swift->send($message);
@@ -924,7 +960,7 @@ class Notifications {
    {
         global $db, $fs, $user;
 
-        // echo "<pre>SpecificAddresses</pre>";
+        echo "<pre>SpecificAddresses</pre>";
 
         $jabber_users = array();
         $email_users = array();
@@ -978,7 +1014,7 @@ class Notifications {
    function Address($task_id, $type)
    {
       global $db, $fs, $proj, $user;
-      // echo "<pre>Address</pre>";
+      echo "<pre>Address</pre>";
 
       $users = array();
 
@@ -1066,14 +1102,15 @@ class Notifications {
       // ...but only if the task is public
       if ($task_details['mark_private'] != '1' && in_array($type, Flyspray::int_explode(' ', $proj->prefs['notify_types'])))
       {
+         // FIXME!
          $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
          $proj_jids = explode(',', $proj->prefs['notify_jabber']);
-         /*
+         
          echo "<pre>";
          echo var_dump($proj_emails);
          echo var_dump($proj_jids);
          echo "</pre>";
-         */
+         
          foreach ($proj_emails as $key => $val)
          {
             if (!empty($val) && !in_array($val, $email_users))
