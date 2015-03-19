@@ -662,7 +662,7 @@ abstract class Backend
             $users_to_notify = $db->FetchCol($sql);
             if (! in_array($email, $users_to_notify))
             {
-                array_push($users_to_notify, $email);
+                array_push($users_to_notify, array('recipient' => $email, 'lang' => $fs->prefs['lang_code']));
             }
 
             // Notify the appropriate users
@@ -1066,7 +1066,9 @@ abstract class Backend
         }
 
         if ($user->isAnon()) {
-            $notify->Create(NOTIFY_ANON_TASK, $task_id, $token, $args['anon_email'], NOTIFY_EMAIL);
+            $notify->Create(NOTIFY_ANON_TASK, $task_id, $token, 
+                    array('recipient' => $args['anon_email'], 'lang' => $fs->prefs['lang_code']),
+                    NOTIFY_EMAIL);
         }
 
         return array($task_id, $token);

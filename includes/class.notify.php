@@ -89,8 +89,7 @@ class Notifications {
       $row = $db->FetchRow($result);
       $message_id = $row['message_id'];
 
-      // If message could not be inserted for
-      // whatever reason...
+      // If message could not be inserted for whatever reason...
       if (!$message_id) {
           return false;
       }
@@ -99,23 +98,21 @@ class Notifications {
       // echo var_dump($to);
       // echo "</pre>";
 
-      // make sure every user is only added once
       settype($to, 'array');
-      $to = array_unique($to);
 
-      foreach ($to as $jid) {
-
-      // echo "<pre>";
-      // echo var_dump($jid);
-      // echo "</pre>";
-      //    if (isset($jid['notify_online']) && $jid['notify_online']) {
-         // store each recipient in table
-         $db->Query("INSERT INTO {notification_recipients}
+      $duplicates = array();
+      foreach ($to as $jid)
+      {
+          // make sure every recipient is only added once
+          if (in_array($jid['recipient'], $duplicates)) {
+              continue;
+          }
+          $duplicates[] = $jid['recipient'];
+          $db->Query("INSERT INTO {notification_recipients}
                      (notify_method, message_id, notify_address)
                      VALUES (?, ?, ?)",
-                     array('o', $message_id, $jid)
+                     array('o', $message_id, $jid['recipient'])
                     );
-          // }
       }
 
       return true;
@@ -183,23 +180,26 @@ class Notifications {
       $row = $db->FetchRow($result);
       $message_id = $row['message_id'];
 
-      // If message could not be inserted for
-      // whatever reason...
+      // If message could not be inserted for whatever reason...
       if (!$message_id) {
           return false;
       }
 
-      // make sure every email address is only added once
       settype($to, 'array');
-      $to = array_unique($to);
 
+      $duplicates = array();
       foreach ($to as $jid)
       {
-         // store each recipient in table
-         $db->Query("INSERT INTO {notification_recipients}
+          // make sure every recipient is only added once
+          if (in_array($jid['recipient'], $duplicates)) {
+              continue;
+          }
+          $duplicates[] = $jid['recipient'];
+          // store each recipient in table
+          $db->Query("INSERT INTO {notification_recipients}
                      (notify_method, message_id, notify_address)
                      VALUES (?, ?, ?)",
-                     array('j', $message_id, $jid)
+                     array('j', $message_id, $jid['recipient'])
                     );
 
       }
@@ -418,7 +418,9 @@ class Notifications {
         }
 
         // now accepts string , array or Swift_Address.
-        $message->setTo($to);
+        // echo "<pre>".var_dump($to)."</pre>";
+        // return true;
+        $message->setTo($to['recipient']);
         $message->setFrom(array($fs->prefs['admin_email'] => $proj->prefs['project_title']));
         $swift->send($message);
 
@@ -922,6 +924,8 @@ class Notifications {
    {
         global $db, $fs, $user;
 
+        // echo "<pre>SpecificAddresses</pre>";
+
         $jabber_users = array();
         $email_users = array();
         $online_users = array();
@@ -934,7 +938,7 @@ class Notifications {
             return array();
         }
 
-        $sql = $db->Query('SELECT user_id, notify_type, email_address, jabber_id, notify_online
+        $sql = $db->Query('SELECT user_id, notify_type, email_address, jabber_id, notify_online, lang_code
                              FROM {users}
                             WHERE' . substr(str_repeat(' user_id = ? OR ', count($users)), 0, -3),
                            array_values($users));
@@ -948,29 +952,33 @@ class Notifications {
             if ( ($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_EMAIL || $user_details['notify_type'] == NOTIFY_BOTH) )
                 || $fs->prefs['user_notify'] == '2' || $ignoretype)
             {
-                array_push($email_users, $user_details['email_address']);
-
+             if (isset($row['email_address']) && !empty($row['email_address'])) {
+                array_push($email_users, array('recipient' => $user_details['email_address'], 'lang' => $user_details['lang_code']));
+             }
             }
 
             if ( ($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_JABBER || $user_details['notify_type'] == NOTIFY_BOTH) )
                 || $fs->prefs['user_notify'] == '3' || $ignoretype)
             {
-                array_push($jabber_users, $user_details['jabber_id']);
+             if (isset($row['jabber_id']) && !empty($row['jabber_id'])) {
+                array_push($jabber_users, array('recipient' => $user_details['jabber_id'], 'lang' => $user_details['lang_code']));
+             }
             }
 
             if ($fs->prefs['user_notify'] == '1' && $user_details['notify_online'])
             {
-                array_push($online_users, $user_details['user_id']);
+                array_push($online_users, array('recipient' => $user_details['user_id'], 'lang' => $user_details['lang_code']));
             }
         }
 
-        return array($email_users, array_unique($jabber_users), array_unique($online_users));
+        return array($email_users, $jabber_users, $online_users);
 
    } // }}}
    // {{{ Create a standard address list of users (assignees, notif tab and proj addresses)
    function Address($task_id, $type)
    {
       global $db, $fs, $proj, $user;
+      // echo "<pre>Address</pre>";
 
       $users = array();
 
@@ -996,21 +1004,24 @@ class Notifications {
          if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) )
              || $fs->prefs['user_notify'] == '2')
          {
-               array_push($email_users, $row['email_address']);
-
+             if (isset($row['email_address']) && !empty($row['email_address'])) {
+               array_push($email_users, array('recipient' => $row['email_address'], 'lang' => $row['lang_code']));
+             }
          }
 
          if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) )
              || $fs->prefs['user_notify'] == '3')
          {
-               array_push($jabber_users, $row['jabber_id']);
+             if (isset($row['jabber_id']) && !empty($row['jabber_id'])) {
+               array_push($jabber_users, array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']));
+             }
          }
 
          // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
          //    || $fs->prefs['user_notify'] == '4')
          if ($fs->prefs['user_notify'] == '1' && $row['notify_online'])
          {
-               array_push($online_users, $row['user_id']);
+               array_push($online_users, array('recipient' => $row['user_id'], 'lang' => $row['lang_code']));
          }
       }
 
@@ -1030,21 +1041,24 @@ class Notifications {
          if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) )
              || $fs->prefs['user_notify'] == '2')
          {
-               array_push($email_users, $row['email_address']);
-
+             if (isset($row['email_address']) && !empty($row['email_address'])) {
+               array_push($email_users, array('recipient' => $row['email_address'], 'lang' => $row['lang_code']));
+             }
          }
 
          if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) )
              || $fs->prefs['user_notify'] == '3')
          {
-               array_push($jabber_users, $row['jabber_id']);
+             if (isset($row['jabber_id']) && !empty($row['jabber_id'])) {
+               array_push($jabber_users, array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']));
+             }
          }
 
          // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
          //    || $fs->prefs['user_notify'] == '4')
          if ($fs->prefs['user_notify'] == '1' && $row['notify_online'])
          {
-               array_push($online_users, $row['user_id']);
+               array_push($online_users, array('recipient' => $row['user_id'], 'lang' => $row['lang_code']));
          }
       }
 
@@ -1054,7 +1068,12 @@ class Notifications {
       {
          $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
          $proj_jids = explode(',', $proj->prefs['notify_jabber']);
-
+         /*
+         echo "<pre>";
+         echo var_dump($proj_emails);
+         echo var_dump($proj_jids);
+         echo "</pre>";
+         */
          foreach ($proj_emails as $key => $val)
          {
             if (!empty($val) && !in_array($val, $email_users))
@@ -1067,16 +1086,11 @@ class Notifications {
                array_push($jabber_users, $val);
          }
 
-         foreach ($proj_jids as $key => $val)
-         {
-            if (!empty($val) && !in_array($val, $online_users))
-               array_push($online_users, $val);
-         }
-
+         // No online notifications?
       // End of checking if a task is private
       }
       // Send back three arrays containing the notification addresses
-      return array($email_users, array_unique($jabber_users), array_unique($online_users));
+      return array($email_users, $jabber_users, $online_users);
 
    } // }}}
     // {{{ Fix the message data

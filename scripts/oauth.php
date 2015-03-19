@@ -167,7 +167,9 @@ if (! Flyspray::checkForOauthUser($uid, $provider)) {
     if ($username) {
         $group_in = $fs->prefs['anon_group'];
         $name     = $user_details->name ?: $username;
-        $success  = Backend::create_user($username, null, $name, '', $user_details->email, 0, 0, $group_in, 1, $uid, $provider);
+        $success  = Backend::create_user($username, null, $name, '',
+                array('recipient' => $user_details->email, 'lang' => $fs->prefs['lang_code']),
+                0, 0, $group_in, 1, $uid, $provider);
     }
 
     // username taken or not provided, ask for it
