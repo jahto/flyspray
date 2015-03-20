@@ -519,14 +519,34 @@ abstract class Backend
     }
 
     public static function GetAdminAddresses() {
+        global $db;
+
+        echo "<pre>GetAdminAddresses</pre>";
+
+        $emails = array();
+        $jabbers = array();
+        $onlines = array();
+        
         $sql = $db->Query('SELECT DISTINCT u.user_id, u.email_address, u.jabber_id,
                                   u.notify_online, u.notify_type, u.notify_own, u.lang_code
                              FROM {users} u
                              JOIN {users_in_groups} g ON u.user_id = g.user_id
                              WHERE g.group_id = 1 AND u.account_enabled = 1');
+        // Notifications::AssignRecipients($db->FetchAllArray($sql), $emails, $jabbers, $onlines, $ignoretype);
+        Notifications::AssignRecipients($db->FetchAllArray($sql), $emails, $jabbers, $onlines);
+        
+        return array($emails, $jabbers, $onlines);
     }
 
     public static function GetProjectManagerAddresses($project_id) {
+        global $db;
+
+        echo "<pre>GetProjectManagerAddresses</pre>";
+
+        $emails = array();
+        $jabbers = array();
+        $onlines = array();
+        
         $sql = $db->Query('SELECT DISTINCT u.user_id, u.email_address, u.jabber_id,
                                   u.notify_online, u.notify_type, u.notify_own, u.lang_code
                              FROM {users} u
@@ -534,6 +554,10 @@ abstract class Backend
                              JOIN {groups} g ON g.group_id = ug.group_id
                              WHERE g.manage_project = 1 AND g.project_id = ? AND u.account_enabled = 1',
                 array($project_id));
+        // Notifications::AssignRecipients($db->FetchAllArray($sql), $emails, $jabbers, $onlines, $ignoretype);
+        Notifications::AssignRecipients($db->FetchAllArray($sql), $emails, $jabbers, $onlines);
+        
+        return array($emails, $jabbers, $onlines);
     }
     /**
      * Creates a new user
@@ -669,6 +693,7 @@ abstract class Backend
         // Send a user his details (his username might be altered, password auto-generated)
         // dont send notifications if the user logged in using oauth
         if ( ! $oauth_provider ) {
+            /*
             $users_to_notify = array();
             // Notify admins on new user registration
             if( $fs->prefs['notify_registration'] ) {
@@ -685,11 +710,19 @@ abstract class Backend
             if (!in_array($email, $users_to_notify)) {
                 array_push($users_to_notify, array('recipient' => $email, 'lang' => $fs->prefs['lang_code']));
             }
+             */
+            // If the new user is not an admin, add him to the notification list
+            $recipients = self::GetAdminAddresses();
+            if (isset($recipients[0]) && is_array($recipients[0])) {
+                if (!array_key_exists($email, $recipients[0])) {
+                    $recipients[0][$email] = array('recipient' => $email, 'lang' => $fs->prefs['lang_code']);
+                }
+            }
 
             // Notify the appropriate users
             $notify->Create(NOTIFY_NEW_USER, null,
                             array($baseurl, $user_name, $real_name, $email, $jabber_id, $password, $auto),
-                            $users_to_notify, NOTIFY_EMAIL);
+                            $recipients, NOTIFY_EMAIL);
         }
 
         return true;
@@ -728,9 +761,14 @@ abstract class Backend
 			unlink(BASEDIR.'/avatars/'.$userDetails['profile_image']);
 		}
 
-		$db->Query('DELETE FROM {registrations} WHERE email_address = "'.$userDetails['email_address'].'"');
-		$db->Query('DELETE FROM {user_emails} WHERE email_address = "'.$userDetails['email_address'].'"');
-		$db->Query('DELETE FROM {reminders} WHERE to_user_id = '.$uid.' OR from_user_id = '.$uid);
+		$db->Query('DELETE FROM {registrations} WHERE email_address = ?',
+                        array($userDetails['email_address']));
+                
+		$db->Query('DELETE FROM {user_emails} WHERE email_address = ?',
+                        array($userDetails['email_address']));
+		
+                $db->Query('DELETE FROM {reminders} WHERE to_user_id = ? OR from_user_id = ?',
+                        array($uid, $uid));
 
 		// for the unusual situuation that a user ID is re-used, make sure that the new user doesn't
 		// get permissions for a task automatically

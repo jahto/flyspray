@@ -28,6 +28,7 @@ class Notifications {
         }
 
         if (!count($to)) {
+            echo "<pre>Error 0!</pre>";
             return false;
         }
 
@@ -35,40 +36,46 @@ class Notifications {
         $emails = array();
         $jabbers = array();
         $onlines = array();
-        
-        foreach ($to[0] as $recipient) {
-            // echo "<pre>".var_dump($recipient)."</pre>";
 
-            $lang = $recipient['lang'];
-            if ($lang == 'j')
-                echo "<pre>Error 1!</pre>";
-            $emails[$lang][] = $recipient['recipient'];
-            if (!in_array($lang, $languages)) {
-                $languages[] = $lang;
+        if (isset($to[0])) {
+            foreach ($to[0] as $recipient) {
+                // echo "<pre>".var_dump($recipient)."</pre>";
+
+                $lang = $recipient['lang'];
+                if ($lang == 'j')
+                    echo "<pre>Error 1!</pre>";
+                $emails[$lang][] = $recipient['recipient'];
+                if (!in_array($lang, $languages)) {
+                    $languages[] = $lang;
+                }
             }
         }
 
-        foreach ($to[1] as $recipient) {
-            // echo "<pre>".var_dump($recipient)."</pre>";
+        if (isset($to[1])) {
+            foreach ($to[1] as $recipient) {
+                // echo "<pre>".var_dump($recipient)."</pre>";
 
-            $lang = $recipient['lang'];
-            if ($lang == 'j')
-                echo "<pre>Error 2!</pre>";
-            $jabbers[$lang][] = $recipient['recipient'];
-            if (!in_array($lang, $languages)) {
-                $languages[] = $lang;
+                $lang = $recipient['lang'];
+                if ($lang == 'j')
+                    echo "<pre>Error 2!</pre>";
+                $jabbers[$lang][] = $recipient['recipient'];
+                if (!in_array($lang, $languages)) {
+                    $languages[] = $lang;
+                }
             }
         }
 
-        foreach ($to[2] as $recipient) {
-            // echo "<pre>".var_dump($recipient)."</pre>";
+        if (isset($to[2])) {
+            foreach ($to[2] as $recipient) {
+                // echo "<pre>".var_dump($recipient)."</pre>";
 
-            $lang = $recipient['lang'];
-            if ($lang == 'j')
-                echo "<pre>Error 3!</pre>";
-            $onlines[$lang][] = $recipient['recipient'];
-            if (!in_array($lang, $languages)) {
-                $languages[] = $lang;
+                $lang = $recipient['lang'];
+                if ($lang == 'j')
+                    echo "<pre>Error 3!</pre>";
+                $onlines[$lang][] = $recipient['recipient'];
+                if (!in_array($lang, $languages)) {
+                    $languages[] = $lang;
+                }
             }
         }
 

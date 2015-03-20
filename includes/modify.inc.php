@@ -545,9 +545,13 @@ switch ($action = Req::val('action'))
 
         $confirm_code = substr($randval, 0, 20);
 
-        // send the email first.
+        // echo "<pre>Am I here?</pre>";
+        // send the email first
+        $userconfirmation = array();
+        $userconfirmation[$email] = array('recipient' => $email, 'lang' => $fs->prefs['lang_code']);
+        $recipients = array($userconfirmation);
         if($notify->Create(NOTIFY_CONFIRMATION, null, array($baseurl, $magic_url, $user_name, $confirm_code),
-            array('recipient' => $email, 'lang' => $fs->prefs['lang_code']),
+            $recipients,
             NOTIFY_EMAIL)) {
 
             //email sent succefully, now update the database.
