@@ -149,7 +149,7 @@ endif; ?>
 	endif;
 	if (!$user->isAnon() && isset($online_notification_num) && $online_notification_num):
 	?><li>
-            <div id="notifications" onmouseover="Show(this, 'notifications')" onmouseout="Hide(this, 'notifications')">
+            <div id="notificationlist" onmouseover="Show(this, 'notifications')" onmouseout="Hide(this, 'notifications')">
 	     <a class="pendingreq attention"
 		href="<?php echo Filters::noXSS(CreateURL('notifications', $user->id)); ?>"><?php echo Filters::noXSS($online_notification_num); ?> <?php echo Filters::noXSS(L('notifications')); ?></a>
               <div id="desc_notifications" class="descbox box">

@@ -673,13 +673,14 @@ abstract class Backend
             // Notify admins on new user registration
             if( $fs->prefs['notify_registration'] ) {
                 // Gather list of admin users
-                $sql = $db->Query('SELECT DISTINCT email_address
+                $sql = $db->Query('SELECT DISTINCT email_address, user_id
                                  FROM {users} u
                             LEFT JOIN {users_in_groups} g ON u.user_id = g.user_id
                                  WHERE g.group_id = 1');
 
                 // If the new user is not an admin, add him to the notification list
-                $users_to_notify = $db->FetchCol($sql);
+                // $users_to_notify = $db->FetchCol($sql);
+                list($email_address, $user_id) = $db->FetchRow($sql);
             }
             if (!in_array($email, $users_to_notify)) {
                 array_push($users_to_notify, array('recipient' => $email, 'lang' => $fs->prefs['lang_code']));

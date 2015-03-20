@@ -36,35 +36,39 @@ class Notifications {
         $jabbers = array();
         $onlines = array();
         
-        foreach ($to as $recipient) {
+        foreach ($to[0] as $recipient) {
             // echo "<pre>".var_dump($recipient)."</pre>";
 
-            if (isset($recipient[0])) {
-                $lang = $recipient[0]['lang'];
-                if ($lang == 'j')
-                    echo "<pre>Error 1!</pre>";
-                $emails[$lang][] = $recipient[0]['recipient'];
-                if (!in_array($lang, $languages)) {
-                    $languages[] = $lang;
-                }
+            $lang = $recipient['lang'];
+            if ($lang == 'j')
+                echo "<pre>Error 1!</pre>";
+            $emails[$lang][] = $recipient['recipient'];
+            if (!in_array($lang, $languages)) {
+                $languages[] = $lang;
             }
-            if (isset($recipient[1])) {
-                $lang = $recipient[1]['lang'];
-                if ($lang == 'j')
-                    echo "<pre>Error 2!</pre>";
-                $jabbers[$lang][] = $recipient[1]['recipient'];
-                if (!in_array($lang, $languages)) {
-                    $languages[] = $lang;
-                }
+        }
+
+        foreach ($to[1] as $recipient) {
+            // echo "<pre>".var_dump($recipient)."</pre>";
+
+            $lang = $recipient['lang'];
+            if ($lang == 'j')
+                echo "<pre>Error 2!</pre>";
+            $jabbers[$lang][] = $recipient['recipient'];
+            if (!in_array($lang, $languages)) {
+                $languages[] = $lang;
             }
-            if (isset($recipient[2])) {
-                $lang = $recipient[2]['lang'];
-                if ($lang == 'j')
-                    echo "<pre>Error 3!</pre>";
-                $onlines[$lang][] = $recipient[2]['recipient'];
-                if (!in_array($lang, $languages)) {
-                    $languages[] = $lang;
-                }
+        }
+
+        foreach ($to[2] as $recipient) {
+            // echo "<pre>".var_dump($recipient)."</pre>";
+
+            $lang = $recipient['lang'];
+            if ($lang == 'j')
+                echo "<pre>Error 3!</pre>";
+            $onlines[$lang][] = $recipient['recipient'];
+            if (!in_array($lang, $languages)) {
+                $languages[] = $lang;
             }
         }
 
@@ -78,7 +82,7 @@ class Notifications {
         foreach ($languages as $lang) {
             $msg = $this->GenerateMsg($type, $task_id, $info, $lang);
             if (isset($emails[$lang]) && ($ntype == NOTIFY_EMAIL || $ntype == NOTIFY_BOTH)) {
-                if (!$this->SendEmail((is_array($emails[$lang][0]) ? $emails[$lang][0] : $emails[$lang]), $msg[0], $msg[1], $task_id)) {
+                if (!$this->SendEmail($emails[$lang], $msg[0], $msg[1], $task_id)) {
                     $result = false;
                 }
             }
@@ -974,7 +978,6 @@ class Notifications {
                 continue;
             }
 
-<<<<<<< HEAD
             if (($fs->prefs['user_notify'] == '1' && ($recipient['notify_type'] == NOTIFY_EMAIL || $recipient['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2' || $ignoretype) {
                 if (isset($recipient['email_address']) && !empty($recipient['email_address'])) {
                     $emails[$recipient['email_address']] = array('recipient' => $recipient['email_address'], 'lang' => $recipient['lang_code']);
@@ -989,22 +992,6 @@ class Notifications {
 
             if ($fs->prefs['user_notify'] == '1' && $recipient['notify_online']) {
                 $onlines[$recipient['user_id']] = array('recipient' => $recipient['user_id'], 'lang' => $recipient['lang_code']);
-=======
-            if (($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_EMAIL || $user_details['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2' || $ignoretype) {
-                if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    array_push($email_users, array('recipient' => $user_details['email_address'], 'lang' => $user_details['lang_code']));
-                }
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_JABBER || $user_details['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3' || $ignoretype) {
-                if (isset($row['jabber_id']) && !empty($row['jabber_id'] && $row['jabber_id'])) {
-                    array_push($jabber_users, array('recipient' => $user_details['jabber_id'], 'lang' => $user_details['lang_code']));
-                }
-            }
-
-            if ($fs->prefs['user_notify'] == '1' && $user_details['notify_online']) {
-                array_push($online_users, array('recipient' => $user_details['user_id'], 'lang' => $user_details['lang_code']));
->>>>>>> parent of e26d0ca... First take at using user_id as key in arrays. Next: track all callers.
             }
         }
     }
@@ -1057,33 +1044,7 @@ class Notifications {
                               LEFT JOIN {users} u ON n.user_id = u.user_id
                                   WHERE n.task_id = ?', array($task_id));
 
-<<<<<<< HEAD
         self::AssignRecipients($db->FetchAllArray($get_users), $emails, $jabbers, $onlines);
-=======
-        while ($row = $db->FetchRow($get_users)) {
-            if ($row['user_id'] == $user->id && !$user->infos['notify_own']) {
-                continue;
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2') {
-                if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    array_push($email_users, array('recipient' => $row['email_address'], 'lang' => $row['lang_code']));
-                }
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3') {
-                if (isset($row['jabber_id']) && !empty($row['jabber_id']) && $row['jabber_id']) {
-                    array_push($jabber_users, array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']));
-                }
-            }
-
-            // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
-            //    || $fs->prefs['user_notify'] == '4')
-            if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
-                array_push($online_users, array('recipient' => $row['user_id'], 'lang' => $row['lang_code']));
-            }
-        }
->>>>>>> parent of e26d0ca... First take at using user_id as key in arrays. Next: track all callers.
 
         // Get list of assignees
         $get_users = $db->Query('SELECT *
@@ -1091,7 +1052,6 @@ class Notifications {
                               LEFT JOIN {users} u ON a.user_id = u.user_id
                                   WHERE a.task_id = ?', array($task_id));
 
-<<<<<<< HEAD
         self::AssignRecipients($db->FetchAllArray($get_users), $emails, $jabbers, $onlines);
         // Now, we add the project contact addresses...
         // ...but only if the task is public
@@ -1099,38 +1059,6 @@ class Notifications {
             // FIXME! Have to find users preferred language here too,
             // must fetch from database. But the address could also be a mailing
             // list address and user not exist in database, use fs->prefs in that case,
-=======
-        while ($row = $db->FetchRow($get_users)) {
-            if ($row['user_id'] == $user->id && !$user->infos['notify_own']) {
-                continue;
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2') {
-                if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    array_push($email_users, array('recipient' => $row['email_address'], 'lang' => $row['lang_code']));
-                }
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3') {
-                if (isset($row['jabber_id']) && !empty($row['jabber_id']) && $row['jabber_id']) {
-                    array_push($jabber_users, array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']));
-                }
-            }
-
-            // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
-            //    || $fs->prefs['user_notify'] == '4')
-            if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
-                array_push($online_users, array('recipient' => $row['user_id'], 'lang' => $row['lang_code']));
-            }
-        }
-
-        // Now, we add the project contact addresses...
-        // ...but only if the task is public
-        if ($task_details['mark_private'] != '1' && in_array($type, Flyspray::int_explode(' ', $proj->prefs['notify_types']))) {
-            // FIXME! Have to find users preferred language here too, must fetch from database.
-            $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
-            $proj_jids = explode(',', $proj->prefs['notify_jabber']);
->>>>>>> parent of e26d0ca... First take at using user_id as key in arrays. Next: track all callers.
 
             $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
             $desired = implode("','", $proj_emails);
@@ -1168,17 +1096,12 @@ class Notifications {
                     $jabbers[$jabber] = array('recipient' => $jabber, 'lang' => $fs->prefs['lang_code']);
                 }
             }
-<<<<<<< HEAD
             /*
             echo "<pre>";
             echo var_dump($proj_emails);
             echo var_dump($proj_jids);
             echo "</pre>";
             */
-=======
-
-            // No online notifications?
->>>>>>> parent of e26d0ca... First take at using user_id as key in arrays. Next: track all callers.
             // End of checking if a task is private
         }
         // Send back three arrays containing the notification addresses
