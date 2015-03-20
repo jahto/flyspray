@@ -518,6 +518,23 @@ abstract class Backend
         return utf8_keepalphanum($user_name);
     }
 
+    public static function GetAdminAddresses() {
+        $sql = $db->Query('SELECT DISTINCT u.user_id, u.email_address, u.jabber_id,
+                                  u.notify_online, u.notify_type, u.notify_own, u.lang_code
+                             FROM {users} u
+                             JOIN {users_in_groups} g ON u.user_id = g.user_id
+                             WHERE g.group_id = 1 AND u.account_enabled = 1');
+    }
+
+    public static function GetProjectManagerAddresses($project_id) {
+        $sql = $db->Query('SELECT DISTINCT u.user_id, u.email_address, u.jabber_id,
+                                  u.notify_online, u.notify_type, u.notify_own, u.lang_code
+                             FROM {users} u
+                             JOIN {users_in_groups} ug ON u.user_id = ug.user_id
+                             JOIN {groups} g ON g.group_id = ug.group_id
+                             WHERE g.manage_project = 1 AND g.project_id = ? AND u.account_enabled = 1',
+                array($project_id));
+    }
     /**
      * Creates a new user
      * @param string $user_name

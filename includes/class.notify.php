@@ -966,15 +966,45 @@ class Notifications {
       return array(Notifications::fixMsgData($subject), Notifications::fixMsgData($body), $onlineshort, $onlinelong);
 
    } // }}}
-   // {{{ Create an address list for specific users
+   public static function AssignRecipients($recipients, &$emails, &$jabbers, &$onlines, $ignoretype = false) {
+        global $db, $fs, $user;
+
+        if (!is_array($recipients)) {
+            return false;
+        }
+
+        foreach ($recipients as $recipient) {
+            if ($recipient['user_id'] == $user->id && !$user->infos['notify_own']) {
+                continue;
+            }
+
+            if (($fs->prefs['user_notify'] == '1' && ($recipient['notify_type'] == NOTIFY_EMAIL || $recipient['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2' || $ignoretype) {
+                if (isset($recipient['email_address']) && !empty($recipient['email_address'])) {
+                    $emails[$recipient['email_address']] = array('recipient' => $recipient['email_address'], 'lang' => $recipient['lang_code']);
+                }
+            }
+
+            if (($fs->prefs['user_notify'] == '1' && ($recipient['notify_type'] == NOTIFY_JABBER || $recipient['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3' || $ignoretype) {
+                if (isset($recipient['jabber_id']) && !empty($recipient['jabber_id'] && $recipient['jabber_id'])) {
+                    $jabbers[$recipient['jabber_id']] = array('recipient' => $recipient['jabber_id'], 'lang' => $recipient['lang_code']);
+                }
+            }
+
+            if ($fs->prefs['user_notify'] == '1' && $recipient['notify_online']) {
+                $onlines[$recipient['user_id']] = array('recipient' => $recipient['user_id'], 'lang' => $recipient['lang_code']);
+            }
+        }
+    }
+
+    // {{{ Create an address list for specific users
    function SpecificAddresses($users, $ignoretype = false) {
         global $db, $fs, $user;
 
         echo "<pre>SpecificAddresses</pre>";
 
-        $jabber_users = array();
-        $email_users = array();
-        $online_users = array();
+        $emails = array();
+        $jabbers = array();
+        $onlines = array();
 
         if (!is_array($users)) {
             settype($users, 'array');
@@ -984,33 +1014,14 @@ class Notifications {
             return array();
         }
 
-        $sql = $db->Query('SELECT user_id, notify_type, email_address, jabber_id, notify_online, lang_code
-                             FROM {users}
+        $sql = $db->Query('SELECT u.user_id, u.email_address, u.jabber_id,
+                                  u.notify_online, u.notify_type, u.notify_own, u.lang_code
+                             FROM {users} u
                             WHERE' . substr(str_repeat(' user_id = ? OR ', count($users)), 0, -3), array_values($users));
 
-        while ($user_details = $db->FetchRow($sql)) {
-            if ($user_details['user_id'] == $user->id && !$user->infos['notify_own']) {
-                continue;
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_EMAIL || $user_details['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2' || $ignoretype) {
-                if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    $email_users[$user_details['user_id']] = array('recipient' => $user_details['email_address'], 'lang' => $user_details['lang_code']);
-                }
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($user_details['notify_type'] == NOTIFY_JABBER || $user_details['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3' || $ignoretype) {
-                if (isset($row['jabber_id']) && !empty($row['jabber_id'] && $row['jabber_id'])) {
-                    $jabber_users[$user_details['user_id']] = array('recipient' => $user_details['jabber_id'], 'lang' => $user_details['lang_code']);
-                }
-            }
-
-            if ($fs->prefs['user_notify'] == '1' && $user_details['notify_online']) {
-                $online_users[$user_details['user_id']] = array('recipient' => $user_details['user_id'], 'lang' => $user_details['lang_code']);
-            }
-        }
-
-        return array($email_users, $jabber_users, $online_users);
+        self::AssignRecipients($db->FetchAllArray($sql), $emails, $jabbers, $onlines, $ignoretype);
+        
+        return array($emails, $jabbers, $onlines);
     }
 
 // }}}
@@ -1021,9 +1032,9 @@ class Notifications {
 
         $users = array();
 
-        $jabber_users = array();
-        $email_users = array();
-        $online_users = array();
+        $emails = array();
+        $jabbers = array();
+        $onlines = array();
 
         $task_details = Flyspray::GetTaskDetails($task_id);
 
@@ -1033,27 +1044,7 @@ class Notifications {
                               LEFT JOIN {users} u ON n.user_id = u.user_id
                                   WHERE n.task_id = ?', array($task_id));
 
-        while ($row = $db->FetchRow($get_users)) {
-            if ($row['user_id'] == $user->id && !$user->infos['notify_own']) {
-                continue;
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2') {
-                if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    $email_users[$row['user_id']] = array('recipient' => $row['email_address'], 'lang' => $row['lang_code']);
-                }
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3') {
-                if (isset($row['jabber_id']) && !empty($row['jabber_id']) && $row['jabber_id']) {
-                    $jabber_users[$row['user_id']] = array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']);
-                }
-            }
-
-            if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
-                $online_users[$row['user_id']] = array('recipient' => $row['user_id'], 'lang' => $row['lang_code']);
-            }
-        }
+        self::AssignRecipients($db->FetchAllArray($get_users), $emails, $jabbers, $onlines);
 
         // Get list of assignees
         $get_users = $db->Query('SELECT *
@@ -1061,28 +1052,7 @@ class Notifications {
                               LEFT JOIN {users} u ON a.user_id = u.user_id
                                   WHERE a.task_id = ?', array($task_id));
 
-        while ($row = $db->FetchRow($get_users)) {
-            if ($row['user_id'] == $user->id && !$user->infos['notify_own']) {
-                continue;
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_EMAIL || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '2') {
-                if (isset($row['email_address']) && !empty($row['email_address'])) {
-                    $email_users[$row['user_id']] = array('recipient' => $row['email_address'], 'lang' => $row['lang_code']);
-                }
-            }
-
-            if (($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_JABBER || $row['notify_type'] == NOTIFY_BOTH) ) || $fs->prefs['user_notify'] == '3') {
-                if (isset($row['jabber_id']) && !empty($row['jabber_id']) && $row['jabber_id']) {
-                    $jabber_users[$row['user_id']] = array('recipient' => $row['jabber_id'], 'lang' => $row['lang_code']);
-                }
-            }
-
-            if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
-                $online_users[$row['user_id']] = array('recipient' => $row['user_id'], 'lang' => $row['lang_code']);
-            }
-        }
-
+        self::AssignRecipients($db->FetchAllArray($get_users), $emails, $jabbers, $onlines);
         // Now, we add the project contact addresses...
         // ...but only if the task is public
         if ($task_details['mark_private'] != '1' && in_array($type, Flyspray::int_explode(' ', $proj->prefs['notify_types']))) {
@@ -1091,33 +1061,51 @@ class Notifications {
             // list address and user not exist in database, use fs->prefs in that case,
 
             $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
-            
-            $sql = $db->Query();
+            $desired = implode("','", $proj_emails);
+            /*
+            echo "<pre>";
+            echo $desired;
+            echo "</pre>";
+             */
+            $get_users = $db->Query("SELECT DISTINCT u.user_id, u.email_address, u.jabber_id,
+                                      u.notify_online, u.notify_type, u.notify_own, u.lang_code
+                                FROM {users} u
+                                WHERE u.email_address IN ('$desired')");
+
+            self::AssignRecipients($db->FetchAllArray($get_users), $emails, $jabbers, $onlines);
 
             $proj_jids = explode(',', $proj->prefs['notify_jabber']);
+            $desired = implode("','", $proj_jids);
 
+            $get_users = $db->Query("SELECT DISTINCT u.user_id, u.email_address, u.jabber_id,
+                                      u.notify_online, u.notify_type, u.notify_own, u.lang_code
+                                FROM {users} u
+                                WHERE u.jabber_id IN ('$desired')");
+
+            self::AssignRecipients($db->FetchAllArray($get_users), $emails, $jabbers, $onlines);
+            
+            // Now, handle notification addresses that are not assigned to any user...
+            foreach ($proj_emails as $email) {
+                if (!array_key_exists($email, $emails)) {
+                    $emails[$email] = array('recipient' => $email, 'lang' => $fs->prefs['lang_code']);
+                }
+            }
+            
+            foreach ($proj_jids as $jabber) {
+                if (!array_key_exists($jabber, $jabbers)) {
+                    $jabbers[$jabber] = array('recipient' => $jabber, 'lang' => $fs->prefs['lang_code']);
+                }
+            }
+            /*
             echo "<pre>";
             echo var_dump($proj_emails);
             echo var_dump($proj_jids);
             echo "</pre>";
-
-            foreach ($proj_emails as $key => $val) {
-                if (!empty($val) && !in_array($val, $email_users)) {
-                    array_push($email_users, $val);
-                }
-            }
-
-            foreach ($proj_jids as $key => $val) {
-                if (!empty($val) && !in_array($val, $jabber_users)) {
-                    array_push($jabber_users, $val);
-                }
-            }
-
-            // No online notifications?
+            */
             // End of checking if a task is private
         }
         // Send back three arrays containing the notification addresses
-        return array($email_users, $jabber_users, $online_users);
+        return array($emails, $jabbers, $onlines);
     }
 
 // }}}

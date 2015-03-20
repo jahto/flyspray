@@ -545,8 +545,7 @@ switch ($action = Req::val('action'))
 
         $confirm_code = substr($randval, 0, 20);
 
-        // FIXME: add lang_code
-        //send the email first.
+        // send the email first.
         if($notify->Create(NOTIFY_CONFIRMATION, null, array($baseurl, $magic_url, $user_name, $confirm_code),
             array('recipient' => $email, 'lang' => $fs->prefs['lang_code']),
             NOTIFY_EMAIL)) {
@@ -636,7 +635,7 @@ switch ($action = Req::val('action'))
                 Post::val('user_pass'),
                 $reg_details['real_name'],
                 $reg_details['jabber_id'],
-                array('recipient' => $reg_details['email_address'], 'lang' => $fs->prefs['lang_code']),
+                $reg_details['email_address'],
                 $reg_details['notify_type'], $reg_details['time_zone'], $fs->prefs['anon_group'], $enabled ,'', '', $image_path)) {
             Flyspray::show_error(L('usernametaken'));
             break;
@@ -731,7 +730,7 @@ switch ($action = Req::val('action'))
 
         if (!Backend::create_user(Post::val('user_name'), Post::val('user_pass'),
             Post::val('real_name'), Post::val('jabber_id'),
-            array('recipient' => Post::val('email_address'), 'lang' => $fs->prefs['lang_code']),
+            Post::val('email_address'),
             Post::num('notify_type'),
             Post::num('time_zone'), $group_in, $enabled, '', '', $image_path)) {
             Flyspray::show_error(L('usernametaken'));
@@ -787,7 +786,7 @@ switch ($action = Req::val('action'))
 
             if (!Backend::create_user($user_name, Post::val('user_pass'),
                 $real_name, '',
-                array('recipient' => $email_address, 'lang' => $fs->prefs['lang_code']),
+                $email_address,
                 Post::num('notify_type'),
                 Post::num('time_zone'), $group_in, $enabled, '', '', ''))
             {
