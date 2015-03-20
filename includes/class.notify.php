@@ -1050,8 +1050,6 @@ class Notifications {
                 }
             }
 
-            // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
-            //    || $fs->prefs['user_notify'] == '4')
             if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
                 $online_users[$row['user_id']] = array('recipient' => $row['user_id'], 'lang' => $row['lang_code']);
             }
@@ -1080,8 +1078,6 @@ class Notifications {
                 }
             }
 
-            // if ( ($fs->prefs['user_notify'] == '1' && ($row['notify_type'] == NOTIFY_ONLINE || $row['notify_type'] == NOTIFY_BOTH) )
-            //    || $fs->prefs['user_notify'] == '4')
             if ($fs->prefs['user_notify'] == '1' && $row['notify_online']) {
                 $online_users[$row['user_id']] = array('recipient' => $row['user_id'], 'lang' => $row['lang_code']);
             }
@@ -1090,9 +1086,14 @@ class Notifications {
         // Now, we add the project contact addresses...
         // ...but only if the task is public
         if ($task_details['mark_private'] != '1' && in_array($type, Flyspray::int_explode(' ', $proj->prefs['notify_types']))) {
-            // FIXME! Have to find users preferred language here too, must fetch from database.
-            /*
+            // FIXME! Have to find users preferred language here too,
+            // must fetch from database. But the address could also be a mailing
+            // list address and user not exist in database, use fs->prefs in that case,
+
             $proj_emails = preg_split('/[\s,;]+/', $proj->prefs['notify_email'], -1, PREG_SPLIT_NO_EMPTY);
+            
+            $sql = $db->Query();
+
             $proj_jids = explode(',', $proj->prefs['notify_jabber']);
 
             echo "<pre>";
@@ -1111,7 +1112,7 @@ class Notifications {
                     array_push($jabber_users, $val);
                 }
             }
-            */
+
             // No online notifications?
             // End of checking if a task is private
         }
