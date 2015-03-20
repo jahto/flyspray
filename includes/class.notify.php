@@ -473,8 +473,8 @@ class Notifications {
 
         // now accepts string , array or Swift_Address.
         echo "<pre>".var_dump($to)."</pre>";
-        return true;
-        $message->setTo($to['recipient']);
+        // return true;
+        $message->setTo($to);
         $message->setFrom(array($fs->prefs['admin_email'] => $proj->prefs['project_title']));
         $swift->send($message);
 
@@ -538,7 +538,11 @@ class Notifications {
       if (isset($proj->prefs['notify_subject']) && !$proj->prefs['notify_subject']) {
           $proj->prefs['notify_subject'] = '[%p][#%t] %s';
       }
-      if (!isset($proj->prefs['notify_subject']) || $type == NOTIFY_CONFIRMATION || $type == NOTIFY_ANON_TASK || $type == NOTIFY_PW_CHANGE || $type == NOTIFY_NEW_USER) {
+      if (!isset($proj->prefs['notify_subject'])
+              || $type == NOTIFY_CONFIRMATION
+              || $type == NOTIFY_ANON_TASK
+              || $type == NOTIFY_PW_CHANGE
+              || $type == NOTIFY_NEW_USER) {
           $subject = tL('notifyfromfs', $lang);
       } else {
           $subject = strtr($proj->prefs['notify_subject'],

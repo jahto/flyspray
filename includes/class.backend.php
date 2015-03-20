@@ -693,24 +693,6 @@ abstract class Backend
         // Send a user his details (his username might be altered, password auto-generated)
         // dont send notifications if the user logged in using oauth
         if ( ! $oauth_provider ) {
-            /*
-            $users_to_notify = array();
-            // Notify admins on new user registration
-            if( $fs->prefs['notify_registration'] ) {
-                // Gather list of admin users
-                $sql = $db->Query('SELECT DISTINCT email_address, user_id
-                                 FROM {users} u
-                            LEFT JOIN {users_in_groups} g ON u.user_id = g.user_id
-                                 WHERE g.group_id = 1');
-
-                // If the new user is not an admin, add him to the notification list
-                // $users_to_notify = $db->FetchCol($sql);
-                list($email_address, $user_id) = $db->FetchRow($sql);
-            }
-            if (!in_array($email, $users_to_notify)) {
-                array_push($users_to_notify, array('recipient' => $email, 'lang' => $fs->prefs['lang_code']));
-            }
-             */
             // If the new user is not an admin, add him to the notification list
             $recipients = self::GetAdminAddresses();
             if (isset($recipients[0]) && is_array($recipients[0])) {
