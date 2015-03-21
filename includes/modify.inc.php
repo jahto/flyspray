@@ -651,7 +651,6 @@ switch ($action = Req::val('action'))
 
         $_SESSION['SUCCESS'] = L('accountcreated');
         define('NO_DO', true);
-        $page->pushTpl('register.ok.tpl');
         break;
 
         // ##################
@@ -745,7 +744,6 @@ switch ($action = Req::val('action'))
 
         if (!$user->perms('is_admin')) {
             define('NO_DO', true);
-            $page->pushTpl('register.ok.tpl');
         }
         break;
 
@@ -810,7 +808,6 @@ switch ($action = Req::val('action'))
             $_SESSION['SUCCESS'] = L('created').$success;
             if (!$user->perms('is_admin')) {
                 define('NO_DO', true);
-                $page->pushTpl('register.ok.tpl');
             }
         }
         break;
