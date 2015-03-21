@@ -8,7 +8,7 @@ require_once BASEDIR . '/lang/en.php';
 I18N::init('en', $language);
 I18N::setDefault($language);
 
-class I18N {
+class FlySprayI18N {
     private static $translations = array();
 
     public static function init($lang, $translation) {
@@ -82,7 +82,7 @@ function L($key){
  */
 
 function tL($key, $lang = null) {
-    return I18N::L($key, $lang);
+    return FlySprayI18N::L($key, $lang);
 }
 /**
  * html escaped variant of the previous
