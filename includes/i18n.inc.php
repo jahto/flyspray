@@ -5,8 +5,8 @@ if (!defined('IN_FS')) {
 }
 
 require_once BASEDIR . '/lang/en.php';
-I18N::init('en', $language);
-I18N::setDefault($language);
+FlySprayI18N::init('en', $language);
+FlySprayI18N::setDefault($language);
 
 class FlySprayI18N {
     private static $translations = array();
@@ -141,7 +141,7 @@ function load_translations(){
 	if ($lang_code != 'en' && is_readable($translation)) {
 		include_once($translation);
 		$language = is_array($translation) ? array_merge($language, $translation) : $language;
-                I18N::init($lang_code, $language);
+                FlySprayI18N::init($lang_code, $language);
 	}elseif( 'en'!=substr($lang_code, 0, strpos($lang_code, '_')) && is_readable(BASEDIR.'/lang/'.(substr($lang_code, 0, strpos($lang_code, '_'))).'.php') ){
 		# fallback 'de_AT' to 'de', but not for 'en_US'
 		$translation=BASEDIR.'/lang/'.(substr($lang_code, 0, strpos($lang_code, '_'))).'.php';
@@ -149,7 +149,7 @@ function load_translations(){
 		$language = is_array($translation) ? array_merge($language, $translation) : $language;    
 	}
 
-        I18N::setDefault($language);
+        FlySprayI18N::setDefault($language);
     // correctly translate title since language not set when initialising the project
     if (!$proj->id) {
         $proj->prefs['project_title'] = L('allprojects');
