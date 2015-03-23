@@ -435,8 +435,11 @@ class Notifications {
         }
 
         if(defined( 'FS_MAIL_LOGFILE')) {
-            $log = Swift_LogContainer::getLog();
-            $log->setLogLevel(SWIFT_LOG_EVERYTHING);
+            // FIXME: Swift_LogContainer exists no more???
+            // See http://swiftmailer.org/docs/plugins.html#logger-plugin
+            // for the new implementation.
+            // $log = Swift_LogContainer::getLog();
+            // $log->setLogLevel(SWIFT_LOG_EVERYTHING);
         }
 
         // Make plaintext URLs into hyperlinks, but don't disturb existing ones!
@@ -479,6 +482,7 @@ class Notifications {
         $message->setFrom(array($fs->prefs['admin_email'] => $proj->prefs['project_title']));
         $swift->send($message);
 
+        /* FIXME: Swift_LogContainer exists no more???
         if(defined('FS_MAIL_LOGFILE')) {
             if(is_writable(dirname(FS_MAIL_LOGFILE))) {
                 if($fh = fopen(FS_MAIL_LOGFILE, 'ab')) {
@@ -488,6 +492,7 @@ class Notifications {
                 }
             }
         }
+        */
 
         return true;
     } //}}}

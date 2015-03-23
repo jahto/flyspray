@@ -613,23 +613,21 @@ abstract class Backend
             array($user_name, Flyspray::cryptPassword($password), $real_name, strtolower($jabber_id),
                 $profile_image, '', strtolower($email), $notify_type, $enabled, time(), $time_zone, '', '', $oauth_uid, $oauth_provider, $fs->prefs['lang_code']));
 
-        $temp = $db->Query('SELECT user_id FROM {users} WHERE user_name = ?',array($user_name));
-        $user_id = $db->fetchOne($temp);
-        $emailList = explode(';',$email);
-        foreach ($emailList as $mail)	//Still need to do: check email
-        {
-            $count = $db->Query("SELECT COUNT(*) FROM {user_emails} WHERE email_address = ?",array($mail));
-            $count = $db->fetchOne($count);
-            if ($count > 0)
-            {
-                Flyspray::show_error("Email address has alredy been taken");
-                return false;
-            } else if ($mail != '')
-                $db->Query("INSERT INTO {user_emails}(id,email_address,oauth_uid,oauth_provider) VALUES (?,?,?,?)",array($user_id,strtolower($mail),$oauth_uid, $oauth_provider));
-        }
-
         // Get this user's id for the record
         $uid = Flyspray::UserNameToId($user_name);
+
+        $emailList = explode(';',$email);
+        foreach ($emailList as $mail) {	//Still need to do: check email
+            $count = $db->Query("SELECT COUNT(*) FROM {user_emails} WHERE email_address = ?",array($mail));
+            $count = $db->fetchOne($count);
+            if ($count > 0) {
+                Flyspray::show_error("Email address has alredy been taken");
+                return false;
+            } else if ($mail != '') {
+                $db->Query("INSERT INTO {user_emails}(id,email_address,oauth_uid,oauth_provider) VALUES (?,?,?,?)",
+                        array($uid,strtolower($mail),$oauth_uid, $oauth_provider));
+            }
+        }
 
         // Now, create a new record in the users_in_groups table
         $db->Query('INSERT INTO  {users_in_groups} (user_id, group_id)
@@ -656,22 +654,14 @@ abstract class Backend
                         'only_primary' => NULL,
                         'only_watched' => NULL);
 
-
                 foreach($varnames as $tmpname) {
-
                     if($tmpname == 'iwatch') {
-
                         $tmparr = array('only_watched' => '1');
-
                     } elseif ($tmpname == 'atome') {
-
                         $tmparr = array('dev'=> $uid);
-
                     } elseif($tmpname == 'iopened') {
-
                         $tmparr = array('opened'=> $uid);
                     }
-
                     $$tmpname = $tmparr + $toserialize;
                 }
 
@@ -696,6 +686,11 @@ abstract class Backend
             // If the new user is not an admin, add him to the notification list
             $recipients = self::GetAdminAddresses();
             if (isset($recipients[0]) && is_array($recipients[0])) {
+                // If the new user is not an admin, add him to the notification list.
+                // Should do this only if account is created as enabled, otherwise
+                // notification should be done when admin request is either accepted
+                // or denied, but we lack a really suitable notification, although
+                // NOTIFY_NEW_USER is quite close.
                 if (!array_key_exists($email, $recipients[0])) {
                     $recipients[0][$email] = array('recipient' => $email, 'lang' => $fs->prefs['lang_code']);
                 }
@@ -705,6 +700,15 @@ abstract class Backend
             $notify->Create(NOTIFY_NEW_USER, null,
                             array($baseurl, $user_name, $real_name, $email, $jabber_id, $password, $auto),
                             $recipients, NOTIFY_EMAIL);
+        }
+
+        // If the account is created as not enabled, no matter what any
+        // preferences might say or how the registration was made in first
+        // place, it MUST be first approved by an admin. And a small
+        // work-around: there's no field for email, so we use reason_given
+        // for that purpose.
+        if ($enabled === 0) {
+            Flyspray::AdminRequest(3, 0, 0, $uid, $email);
         }
 
         return true;
