@@ -269,9 +269,7 @@ class Database
      */
     public function FetchAllArray(&$result)
     {
-        $rval = $result->GetArray();
-        $result->Close();
-        return $rval;
+        return $result->GetArray();
     }
 
     /**
