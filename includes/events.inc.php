@@ -7,6 +7,7 @@
 function get_events($task_id, $where = '')
 {
     global $db;
+    // TODO: Check why this returns the actual result set, not what it contains. Can't close it.
     return $db->Query("SELECT h.*,
                       tt1.tasktype_name AS task_type1,
                       tt2.tasktype_name AS task_type2,
