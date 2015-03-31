@@ -84,6 +84,7 @@ class Notifications {
                             array($date), 1);
 
       $row = $db->FetchRow($result);
+      $db->Close($result);
       $message_id = $row['message_id'];
 
       // If message could not be inserted for
@@ -126,7 +127,9 @@ class Notifications {
                                      JOIN {notification_messages} m ON r.message_id = m.message_id
                                     WHERE r.notify_method = ? AND notify_address = ?',
               array('o', $user['user_id']));
-      return $db->FetchAllArray($notifications);
+      $rval = $db->FetchAllArray($notifications);
+      $db->Close($notifications);
+      return $rval;
    }
 
    static function NotificationsHaveBeenRead($ids) {
@@ -172,6 +175,7 @@ class Notifications {
                             array($date), 1);
 
       $row = $db->FetchRow($result);
+      $db->Close($result);
       $message_id = $row['message_id'];
 
       // If message could not be inserted for
@@ -261,6 +265,7 @@ class Notifications {
       {
          $ids[] = $row['message_id'];
       }
+      $db->Close($result);
 
       $desired = join(",", array_map('intval', $ids));
       $JABBER->log("message ids to send = {" . $desired . "}");
@@ -309,6 +314,7 @@ class Notifications {
                 } else {
                    $JABBER->log("- notification not sent");
                 }
+                $db->Close($result);
             }
             // check to see if there are still recipients for this notification
             $result = $db->Query("SELECT * FROM {notification_recipients}
@@ -326,7 +332,9 @@ class Notifications {
                                    );
                $JABBER->log("- Notification deleted");
             }
+            $db->Close($result);
          }
+         $db->Close($recipients);
 
          // disconnect from server
          $JABBER->disconnect();
@@ -675,6 +683,7 @@ class Notifications {
                                ORDER BY comment_id DESC",
                                array($user->id, $task_id), '1');
          $comment = $db->FetchRow($result);
+         $db->Close($comment);
 
          $body .= L('notify.commentadded') . "\n\n";
          $body .= 'FS#' . $task_id . ' - ' . $task_details['item_summary'] . "\n";
@@ -919,6 +928,7 @@ class Notifications {
                 array_push($online_users, $user_details['user_id']);
             }
         }
+        $db->Close($sql);
 
         return array($email_users, array_unique($jabber_users), array_unique($online_users));
 
@@ -969,6 +979,7 @@ class Notifications {
                array_push($online_users, $row['user_id']);
          }
       }
+      $db->Close($get_users);
 
       // Get list of assignees
       $get_users = $db->Query('SELECT *
@@ -1003,6 +1014,7 @@ class Notifications {
                array_push($online_users, $row['user_id']);
          }
       }
+      $db->Close($get_users);
 
       // Now, we add the project contact addresses...
       // ...but only if the task is public
