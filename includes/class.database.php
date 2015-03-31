@@ -270,6 +270,18 @@ class Database
     }
 
     /**
+     * Close
+     *
+     * @param & $result
+     * @access public
+     * @return bool
+     */
+    public function Close(&$result)
+    {
+        return $result->Close();
+    }
+
+    /**
      * GroupBy
      *
      * This groups a result by a single column the way
