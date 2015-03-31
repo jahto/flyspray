@@ -77,6 +77,7 @@ class Flyspray
         while ($row = $db->FetchRow($res)) {
             $this->prefs[$row['pref_name']] = $row['pref_value'];
         }
+        $db->Close($res);
 
         $this->setDefaultTimezone();
 
@@ -359,6 +360,7 @@ class Flyspray
                                    WHERE  t.task_id = ?', array($task_id));
 
         if (!$db->CountRows($get_details)) {
+            $db->Close($get_details);
             return false;
         }
 
@@ -366,6 +368,7 @@ class Flyspray
             $get_details += array('severity_name' => $fs->severities[$get_details['task_severity']]);
             $get_details += array('priority_name' => $fs->priorities[$get_details['task_priority']]);
         }
+        $db->Close($get_details);
 
         $get_details['assigned_to'] = $get_details['assigned_to_name'] = array();
         if ($assignees = Flyspray::GetAssignees($task_id, true)) {
@@ -397,7 +400,9 @@ class Flyspray
         $query .= ' ORDER BY  project_id ASC';
 
         $sql = $db->Query($query);
-        return $db->fetchAllArray($sql);
+        $rval = $db->fetchAllArray($sql);
+        $db->Close($sql);
+        return $rval;
     } // }}}
     // List themes {{{
     /**
@@ -436,7 +441,9 @@ class Flyspray
                              FROM  {groups}
                             WHERE  project_id = ?
                          ORDER BY  group_id ASC', array($proj_id));
-        return $db->FetchAllArray($res);
+        $rval = $db->FetchAllArray($res);
+        $db->Close($sql);
+        return $rval;
     } // }}}
 
     // Get info on all users {{{
@@ -453,7 +460,9 @@ class Flyspray
         $res = $db->Query('SELECT  account_enabled, user_id, user_name, real_name, email_address
                              FROM  {users}
                          ORDER BY  account_enabled DESC, user_name ASC');
-        return $db->FetchAllArray($res);
+        $rval = $db->FetchAllArray($res);
+        $db->Close($res);
+        return $rval;
     }
 
     // }}}
@@ -572,7 +581,9 @@ class Flyspray
                                FROM {admin_requests}
                               WHERE request_type = ? AND task_id = ? AND resolved_by = 0",
                             array($type, $task_id));
-        return (bool)($db->CountRows($check));
+        $rval = (bool)($db->CountRows($check));
+        $db->Close($check);
+        return $rval;
     } // }}}
     // Get the current user's details {{{
     /**
@@ -588,7 +599,9 @@ class Flyspray
 
         // Get current user details.  We need this to see if their account is enabled or disabled
         $result = $db->Query('SELECT * FROM {users} WHERE user_id = ?', array(intval($user_id)));
-        return $db->FetchRow($result);
+        $rval = $db->FetchRow($result);
+        $db->Close($result);
+        return $rval;
     } // }}}
     // Get group details {{{
     /**
@@ -602,7 +615,9 @@ class Flyspray
     {
         global $db;
         $sql = $db->Query('SELECT * FROM {groups} WHERE group_id = ?', array($group_id));
-        return $db->FetchRow($sql);
+        $rval = $db->FetchRow($sql);
+        $db->Close($sql);
+        return $rval;
     } // }}}
     //  {{{
     /**
@@ -653,6 +668,7 @@ class Flyspray
                             ORDER BY  g.group_id ASC", array($user_id, $username, 0));
 
         $auth_details = $db->FetchRow($result);
+        $db->Close($result);
 
         if($auth_details === false) {
             return -2;
@@ -714,8 +730,10 @@ class Flyspray
         $sql = $db->Query("SELECT id FROM {user_emails} WHERE oauth_uid = ? AND oauth_provider = ?",array($uid, $provider));
 
         if ($db->fetchOne($sql)) {
+            $db->Close($sql);
             return true;
         } else {
+            $db->Close($sql);
             return false;
         }
     }
@@ -948,6 +966,7 @@ class Flyspray
                 $assignees[] = $row['user_id'];
             }
         }
+        $db->Close($sql);
 
         return $assignees;
     } /// }}}
@@ -1048,7 +1067,9 @@ class Flyspray
 
         $sql = $db->Query('SELECT user_id FROM {users} WHERE user_id = ?', array(intval($id)));
 
-        return intval($db->FetchOne($sql));
+        $rval = intval($db->FetchOne($sql));
+        $db->Close($sql);
+        return $rval;
     }
 
     /**
@@ -1064,7 +1085,9 @@ class Flyspray
 
         $sql = $db->Query('SELECT user_id FROM {users} WHERE user_name = ?', array($name));
 
-        return intval($db->FetchOne($sql));
+        $rval = intval($db->FetchOne($sql));
+        $db->Close($sql);
+        return $rval;
     }
 
     /**
