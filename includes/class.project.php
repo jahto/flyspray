@@ -16,10 +16,12 @@ class Project
                                 WHERE p.project_id = ?", array($id));
             if ($db->countRows($sql)) {
                 $this->prefs = $db->FetchRow($sql);
+                $db->Close($sql);
                 $this->id    = (int) $this->prefs['project_id'];
                 return;
             }
         }
+        $db->Close($sql);
 
         $this->id = 0;
         $this->prefs['project_title'] = L('allprojects');
@@ -189,6 +191,7 @@ class Project
                                WHERE category_name = 'root' AND lft = 1 AND project_id = ?",
                              array($project_id));
         $row = $db->FetchRow($result);
+        $db->Close($result);
 
         $groupby = $db->GetColumnNames('{list_category}', 'c.category_id', 'c.');
 
@@ -215,6 +218,7 @@ class Project
            // add this node to the stack
            $right[] = $row['rgt'];
         }
+        $db->Close($result);
 
         // Adjust output for select boxes
         if ($depth) {
@@ -340,12 +344,13 @@ class Project
 		//NOTE: from_unixtime() on mysql, to_timestamp() on PostreSQL
         $func = ('mysql' == $db->dblink->dataProvider) ? 'from_unixtime' : 'to_timestamp';
 
-		$result = $db->Query("SELECT count(date({$func}(event_date))) as val
+		$sql = $db->Query("SELECT count(date({$func}(event_date))) as val
 		FROM {history} h left join {tasks} t on t.task_id = h.task_id
 		WHERE t.project_id = ?
 		AND date({$func}(event_date)) BETWEEN date(?) and date(?)", array($project_id, $startdate, $enddate));
 
-        $result = $db->fetchCol($result);
+        $result = $db->fetchCol($sql);
+        $db->Close($sql);
 		return $result[0];
 	}
 	/**
@@ -379,10 +384,11 @@ class Project
             $results[date('Y-m-d', $event_date)] = 0;
         }
 
-        while ($row = $result->fetchRow()) {
+        while ($row = $db->FetchRow($result)) {
             $event_date           = date('Y-m-d', $row['event_date']);
             $results[$event_date] = (integer) $row['val'];
         }
+        $db->Close($result);
 
 		return array_values($results);
 	}
