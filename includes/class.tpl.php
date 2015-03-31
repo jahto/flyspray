@@ -279,6 +279,7 @@ function tpl_userlink($uid)
         if ($sql && $db->countRows($sql)) {
             list($uname, $rname) = $db->fetchRow($sql);
         }
+        $db->Close($sql);
     }
 
     if (isset($uname)) {
@@ -302,7 +303,9 @@ function tpl_userlinkavatar($uid, $size, $class='', $style='')
 		array(intval($uid)));
 	if ($sql && $db->countRows($sql)) {
 		list($uname, $rname, $email, $profile_image) = $db->fetchRow($sql);
+        $db->Close($sql);
 	} else {
+        $db->Close($sql);
 		return;
 	}
 
@@ -410,6 +413,7 @@ function tpl_userselect($name, $value = null, $id = '', $attrs = array()) {
     if ($value && ctype_digit($value)) {
         $sql = $db->Query('SELECT user_name FROM {users} WHERE user_id = ?', array($value));
         $value = $db->FetchOne($sql);
+        $db->Close($sql);
     }
 
     if (!$value) {
