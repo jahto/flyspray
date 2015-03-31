@@ -67,9 +67,12 @@ abstract class Backend
                                  VALUES  (?,?)', array($row['task_id'], $user_id));
                 Flyspray::logEvent($row['task_id'], 9, $user_id);
             }
+            $db->Close($notif);
         }
 
-        return (bool) $db->CountRows($sql);
+        $rval = (bool) $db->CountRows($sql);
+        $db->Close($sql);
+        return $rval;
     }
 
 
@@ -117,6 +120,7 @@ abstract class Backend
                 Flyspray::logEvent($row['task_id'], 10, $user_id);
             }
         }
+        $db->Close($sql);
     }
 
 
@@ -171,6 +175,7 @@ abstract class Backend
                 Flyspray::logEvent($row['task_id'], 3, 3, 1, 'item_status');
             }
         }
+        $db->Close($sql);
     }
 
     /**
@@ -220,6 +225,7 @@ abstract class Backend
                 Flyspray::logEvent($row['task_id'], 3, 3, 1, 'item_status');
             }
         }
+        $db->Close($sql);
     }
 
     /**
@@ -324,6 +330,7 @@ abstract class Backend
                             ORDER BY  comment_id DESC',
                             array($task['task_id']), 1);
         $cid = $db->FetchOne($result);
+        $db->Close($result);
 
         Flyspray::logEvent($task['task_id'], 4, $cid);
 
@@ -409,6 +416,7 @@ abstract class Backend
                                 ORDER BY  attachment_id DESC',
                     array($task_id), 1);
             Flyspray::logEvent($task_id, 7, $db->fetchOne($result), $_FILES[$source]['name'][$key]);
+            $db->Close($result);
         }
 
         return $res;
@@ -477,6 +485,7 @@ abstract class Backend
             @unlink(BASEDIR . '/attachments/' . $task['file_name']);
             Flyspray::logEvent($task['task_id'], 8, $task['orig_name']);
         }
+        $db->Close($sql);
     }
 
     public static function delete_links($links)
@@ -500,6 +509,7 @@ abstract class Backend
 		    $db->Query('DELETE FROM {links} WHERE link_id = ?', array($task['link_id']));
                     // TODO: Log event in a later version.
 	    }
+        $db->Close($sql);
     }
 
     /**
@@ -553,8 +563,10 @@ abstract class Backend
         $sql = $db->Query('SELECT COUNT(*) FROM {users} WHERE user_name = ?', array($user_name));
 
         if ($db->fetchOne($sql)) {
+            $db->Close($sql);
             return false;
         }
+        $db->Close($sql);
 
         $auto = false;
         // Autogenerate a password
@@ -580,12 +592,14 @@ abstract class Backend
             $count = $db->Query("SELECT COUNT(*) FROM {user_emails} WHERE email_address = ?",array($mail));
             $count = $db->fetchOne($count);
             if ($count > 0) {
+                $db->Close($count);
                 Flyspray::show_error("Email address has alredy been taken");
                 return false;
             } else if ($mail != '') {
                 $db->Query("INSERT INTO {user_emails}(id,email_address,oauth_uid,oauth_provider) VALUES (?,?,?,?)",
                         array($uid,strtolower($mail),$oauth_uid, $oauth_provider));
             }
+            $db->Close($count);
         }
 
         // Now, create a new record in the users_in_groups table
@@ -662,6 +676,7 @@ abstract class Backend
                 if (count($admins)) {
                     $users_to_notify = $admins;
                 }
+                $db->Close($sql);
             }
             if (!in_array($email, $users_to_notify)) {
                 $users_to_notify[] = $email;
@@ -773,6 +788,7 @@ abstract class Backend
                     $db->dblink->Execute($stmt, ($table == 'related') ? array($id, $id) : array($id));
                 }
             }
+            $db->Close($task_ids);
         }
 
         // unset category of tasks because we don't move categories
@@ -838,6 +854,7 @@ abstract class Backend
                             }
                         }
                     }
+                    $db->Close($sql);
                 }
                 $base_sql = 'UPDATE {' . $table . '} SET project_id = ?';
                 $sql_params = array($move_to, $pid);
@@ -858,9 +875,10 @@ abstract class Backend
         while ($row = $db->FetchRow($sql)) {
             $db->Query('DELETE FROM {users_in_groups} WHERE group_id = ?', array($row['group_id']));
         }
+        $db->Close($sql);
         $sql = $db->Query('DELETE FROM {groups} WHERE project_id = ?', array($pid));
 
-        //we have enough reasons ..  the process is OK.
+        // we have enough reasons ..  the process is OK.
         return true;
     }
 
@@ -902,8 +920,10 @@ abstract class Backend
                                 array('task_id', 'to_user_id', 'how_often', 'reminder_message'));
             if(!$sql) {
                 // query has failed :(
+                $db->Close($sql);
                 return false;
             }
+            $db->Close($sql);
         }
         // 2 = no record has found and was INSERT'ed correclty
         if (isset($sql) && $sql == 2) {
@@ -1040,6 +1060,7 @@ abstract class Backend
         $result = $db->Query('SELECT  MAX(task_id)+1
                                 FROM  {tasks}');
         $task_id = $db->FetchOne($result);
+        $db->Close($result);
         $task_id = $task_id ? $task_id : 1;
 
         //now, $task_id is always the first element of $sql_values
@@ -1089,6 +1110,7 @@ abstract class Backend
                                WHERE  category_id = ?',
                                array($args['product_category']));
         $cat_details = $db->FetchRow($result);
+        $db->Close($result);
 
         // We need to figure out who is the category owner for this task
         if (!empty($cat_details['category_owner'])) {
@@ -1108,6 +1130,7 @@ abstract class Backend
                     break;
                 }
             }
+            $db->Close($result);
         }
 
         if (!isset($owner)) {
@@ -1202,6 +1225,7 @@ abstract class Backend
                     $db->Query('INSERT INTO {related} (this_task, related_task, is_duplicate) VALUES(?, ?, 1)',
                                 array($task_id, $dupe_of[1]));
                 }
+                $db->Close($existing);
                 Backend::add_vote($task['opened_by'], $dupe_of[1]);
             }
         }
@@ -1431,6 +1455,7 @@ abstract class Backend
                                            WHERE  category_id = ?',
                                           array($val));
                     $cat_details = $db->FetchRow($result);
+                    $db->Close($result);
 
                     $result = $db->Query('SELECT  *
                                             FROM  {list_category}
@@ -1440,6 +1465,7 @@ abstract class Backend
                         $temp  .= ' product_category = ?  OR';
                         $sql_params[] = $row['category_id'];
                     }
+                    $db->Close($result);
                 }
             }
 
@@ -1534,6 +1560,7 @@ abstract class Backend
 
             ++$task_count;
         }
+        $db->Close($sql);
 
         return array($tasks, $id_list);
     }
