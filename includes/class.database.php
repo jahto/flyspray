@@ -241,7 +241,8 @@ class Database
         }
 
         $sql = $this->Query($sql, $sqlargs);
-        return ($this->cache[$idx] = $this->fetchAllArray($sql));
+        $rval = ($this->cache[$idx] = $this->fetchAllArray($sql));
+        $this->Close($sql);
     }
 
     /**
@@ -320,10 +321,11 @@ class Database
         }
 
         $table = $this->_add_prefix($table);
-        $fetched_columns = $this->Query('SELECT column_name FROM information_schema.columns WHERE table_name = ?',
+        $columns = $this->Query('SELECT column_name FROM information_schema.columns WHERE table_name = ?',
                                          array(str_replace('"', '', $table)));
-        $fetched_columns = $this->FetchAllArray($fetched_columns);
-
+        $fetched_columns = $this->FetchAllArray($columns);
+        $this->Close($columns);
+        
         foreach ($fetched_columns as $key => $value)
         {
             $col_names[$key] = $prefix . $value[0];
