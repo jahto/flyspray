@@ -239,10 +239,12 @@ class Database
         if (isset($this->cache[$idx])) {
             return $this->cache[$idx];
         }
+        
 
         $sql = $this->Query($sql, $sqlargs);
         $rval = ($this->cache[$idx] = $this->fetchAllArray($sql));
         $this->Close($sql);
+        return $rval;
     }
 
     /**
@@ -279,7 +281,12 @@ class Database
      */
     public function Close(&$result)
     {
-        return $result->Close();
+        if (is_object($result)) {
+            return $result->Close();
+        }
+        else {
+            // echo "Somewhere in the code there must be typo, find and fix it!";
+        }
     }
 
     /**
