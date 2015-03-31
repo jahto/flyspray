@@ -29,6 +29,7 @@ class User
             $this->infos['real_name'] = L('anonuser');
             $this->infos['user_name'] = '';
         }
+        $db->Close($sql);
 
         $this->get_perms();
     }
@@ -73,6 +74,7 @@ class User
 
         $sql = $db->Query('SELECT * FROM {searches} WHERE user_id = ? ORDER BY name ASC', array($this->id));
         $this->searches = $db->FetchAllArray($sql);
+        $db->Close($sql);
     }
 
     public function perms($name, $project = null) {
@@ -109,6 +111,7 @@ class User
         while ($row = $db->FetchRow($sql)) {
             $this->perms[$row['project_id']] = $row;
         }
+        $db->Close($sql);
         // Fill permissions for global project
         $this->perms[0] = array_map(create_function('$x', 'return 1;'), end($this->perms));
 
@@ -132,6 +135,7 @@ class User
 
                 $this->perms[$row['project_id']] = array_merge($this->perms[$row['project_id']], $row);
             }
+            $db->Close($sql);
 
             // Set missing permissions and attachments
             foreach ($this->perms as $proj_id => $value) {
@@ -389,8 +393,10 @@ class User
                               WHERE user_id = ? AND task_id = ?',
                              array($this->id, $task['task_id']));
         if ($db->CountRows($check)) {
+            $db->Close($check);
             return -2;
         }
+        $db->Close($check);
 
         // Check that the user hasn't voted more than twice this day
         $check = $db->Query('SELECT vote_id
@@ -398,8 +404,10 @@ class User
                               WHERE user_id = ? AND date_time > ?',
                              array($this->id, time() - 86400));
         if ($db->CountRows($check) > 2) {
+            $db->Close($check);
             return -3;
         }
+        $db->Close($check);
 
         return 1;
     }
@@ -435,13 +443,14 @@ class User
 		//NOTE: from_unixtime() on mysql, to_timestamp() on PostreSQL
         $func = ('mysql' == $db->dblink->dataProvider) ? 'from_unixtime' : 'to_timestamp';
 
-        $result = $db->Query("SELECT count(date({$func}(event_date))) as val
+        $sql = $db->Query("SELECT count(date({$func}(event_date))) as val
 							  FROM {history} h left join {tasks} t on t.task_id = h.task_id
 							  WHERE t.project_id = ? AND h.user_id = ?
 							  AND date({$func}(event_date))
 							  BETWEEN date(?)
 							  AND date(?)", array($project_id, $userid, $startdate, $enddate));
-        $result = $db->fetchCol($result);
+        $result = $db->fetchCol($sql);
+        $db->Close($sql);
 		return $result[0];
 	}
 	/**
@@ -476,10 +485,11 @@ class User
             $results[date('Y-m-d', $event_date)] = 0;
         }
 
-        while ($row = $result->fetchRow()) {
+        while ($row = $db->FetchRow($result)) {
             $event_date           = date('Y-m-d', $row['event_date']);
             $results[$event_date] = (integer) $row['val'];
         }
+        $db->Close($result);
 
 		return array_values($results);
 	}
