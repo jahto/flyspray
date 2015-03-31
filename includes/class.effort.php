@@ -69,10 +69,12 @@ class effort
         $result = $db->Query('SELECT * FROM {effort} WHERE task_id ='.$this->_task_id.' AND user_id='.$this->_userId.' AND end_timestamp IS NULL;');
         if($db->CountRows($result)>0)
         {
+            $db->Close($result);
             return false;
         }
         else
         {
+                $db->Close($result);
                 $db->Query('INSERT INTO  {effort}
                                          (task_id, date_added, user_id,start_timestamp)
                                  VALUES  ( ?, ?, ?, ? )',
@@ -96,6 +98,7 @@ class effort
 
         $sql = $db->Query('SELECT start_timestamp FROM {effort}  WHERE user_id='.$this->_userId.' AND task_id='.$this->_task_id.' AND end_timestamp IS NULL;');
         $result = $db->FetchRow($sql);
+        $db->Close($sql);
         $start_time = $result[0];
         $seconds = $time - $start_time;
         
@@ -121,6 +124,7 @@ class effort
     {
         global $db;
 
+        // TODO: Check why this stores the actual result set, not what it contains. Can't close it.
         $this->details = $db->Query('SELECT * FROM {effort} WHERE task_id ='.$this->_task_id.';');
     }
     
