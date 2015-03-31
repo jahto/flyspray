@@ -269,7 +269,9 @@ class Database
      */
     public function FetchAllArray(&$result)
     {
-        return $result->GetArray();
+        $rval = $result->GetArray();
+        $result->Close();
+        return $rval;
     }
 
     /**
@@ -284,9 +286,8 @@ class Database
         if (is_object($result)) {
             return $result->Close();
         }
-        else {
-            // echo "Somewhere in the code there must be typo, find and fix it!";
-        }
+        // var_dump(debug_backtrace());
+        // die("Somewhere in the code there is an error, find and fix it!");
     }
 
     /**

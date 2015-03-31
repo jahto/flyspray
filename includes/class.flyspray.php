@@ -334,7 +334,7 @@ class Flyspray
             return false;
         }
 
-        $get_details = $db->Query('SELECT t.*, p.*,
+        $details_query = $db->Query('SELECT t.*, p.*,
                                           c.category_name, c.category_owner, c.lft, c.rgt, c.project_id as cproj,
                                           o.os_name,
                                           r.resolution_name,
@@ -359,16 +359,16 @@ class Flyspray
                                LEFT JOIN  {users}              uc ON t.closed_by = uc.user_id
                                    WHERE  t.task_id = ?', array($task_id));
 
-        if (!$db->CountRows($get_details)) {
-            $db->Close($get_details);
+        if (!$db->CountRows($details_query)) {
+            $db->Close($details_query);
             return false;
         }
 
-        if ($get_details = $db->FetchRow($get_details)) {
+        if ($get_details = $db->FetchRow($details_query)) {
             $get_details += array('severity_name' => $fs->severities[$get_details['task_severity']]);
             $get_details += array('priority_name' => $fs->priorities[$get_details['task_priority']]);
         }
-        $db->Close($get_details);
+        $db->Close($details_query);
 
         $get_details['assigned_to'] = $get_details['assigned_to_name'] = array();
         if ($assignees = Flyspray::GetAssignees($task_id, true)) {
