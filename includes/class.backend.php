@@ -1270,19 +1270,21 @@ abstract class Backend
 
         $select = '';
         $groupby = 't.task_id, ';
-        $from   = '             {tasks}         t
-                     LEFT JOIN  {projects}      p   ON t.project_id = p.project_id
-                     LEFT JOIN  {list_tasktype} lt  ON t.task_type = lt.tasktype_id
-                     LEFT JOIN  {list_status}   lst ON t.item_status = lst.status_id
-                     LEFT JOIN  {list_resolution} lr ON t.resolution_reason = lr.resolution_id ';
+        $from   = ' {tasks} t
+LEFT JOIN  {projects}      p   ON t.project_id = p.project_id
+LEFT JOIN  {list_tasktype} lt  ON t.task_type = lt.tasktype_id
+LEFT JOIN  {list_status}   lst ON t.item_status = lst.status_id
+LEFT JOIN  {list_resolution} lr ON t.resolution_reason = lr.resolution_id ';
         // Only join tables which are really necessary to speed up the db-query
         if (array_get($args, 'cat') || in_array('category', $visible)) {
-            $from   .= ' LEFT JOIN  {list_category} lc  ON t.product_category = lc.category_id ';
+            $from   .= '
+LEFT JOIN  {list_category} lc  ON t.product_category = lc.category_id ';
             $select .= ' lc.category_name               AS category_name, ';
             $groupby .= 'lc.category_name, ';
         }
         if (in_array('votes', $visible)) {
-            $from   .= ' LEFT JOIN  {votes} vot         ON t.task_id = vot.task_id ';
+            $from   .= '
+LEFT JOIN  {votes} vot         ON t.task_id = vot.task_id ';
             $select .= ' COUNT(DISTINCT vot.vote_id)    AS num_votes, ';
         }
         $maxdatesql = ' GREATEST((SELECT max(c.date_added) FROM {comments} c WHERE c.task_id = t.task_id), t.date_opened, t.date_closed, t.last_edited_time) ';
@@ -1291,56 +1293,68 @@ abstract class Backend
             $select .= ' GREATEST((SELECT max(c.date_added) FROM {comments} c WHERE c.task_id = t.task_id), t.date_opened, t.date_closed, t.last_edited_time) AS max_date, ';
         }
         if (array_get($args, 'search_in_comments')) {
-            $from   .= ' LEFT JOIN  {comments} c          ON t.task_id = c.task_id ';
+            $from   .= '
+LEFT JOIN  {comments} c          ON t.task_id = c.task_id ';
         }
         if (in_array('comments', $visible)) {
             $select .= ' (SELECT COUNT(cc.comment_id) FROM {comments} cc WHERE cc.task_id = t.task_id)  AS num_comments, ';
         }
         if (in_array('reportedin', $visible)) {
-            $from   .= ' LEFT JOIN  {list_version} lv   ON t.product_version = lv.version_id ';
-            $select .= ' lv.version_name                AS product_version, ';
+            $from   .= '
+LEFT JOIN  {list_version} lv   ON t.product_version = lv.version_id ';
+            $select .= ' lv.version_name                AS product_version_name, ';
             $groupby .= 'lv.version_name, ';
         }
         if (array_get($args, 'opened') || in_array('openedby', $visible)) {
-            $from   .= ' LEFT JOIN  {users} uo          ON t.opened_by = uo.user_id ';
+            $from   .= '
+LEFT JOIN  {users} uo          ON t.opened_by = uo.user_id ';
             $select .= ' uo.real_name                   AS opened_by_name, ';
             $groupby .= 'uo.real_name, ';
         }
         if (array_get($args, 'closed')) {
-            $from   .= ' LEFT JOIN  {users} uc          ON t.closed_by = uc.user_id ';
+            $from   .= '
+LEFT JOIN  {users} uc          ON t.closed_by = uc.user_id ';
             $select .= ' uc.real_name                   AS closed_by_name, ';
             $groupby .= 'uc.real_name, ';
         }
         if (array_get($args, 'due') || in_array('dueversion', $visible)) {
-            $from   .= ' LEFT JOIN  {list_version} lvc  ON t.closedby_version = lvc.version_id ';
-            $select .= ' lvc.version_name               AS closedby_version, ';
-            $groupby .= 'lvc.version_name, ';
+            $from   .= '
+LEFT JOIN  {list_version} lvc  ON t.closedby_version = lvc.version_id ';
+            $select .= ' lvc.version_name               AS closedby_version_name, ';
+            $groupby .= 'lvc.version_name, lvc.list_position, ';
         }
         if (in_array('os', $visible)) {
-            $from   .= ' LEFT JOIN  {list_os} los       ON t.operating_system = los.os_id ';
+            $from   .= '
+LEFT JOIN  {list_os} los       ON t.operating_system = los.os_id ';
             $select .= ' los.os_name                    AS os_name, ';
             $groupby .= 'los.os_name, ';
         }
         if (in_array('attachments', $visible) || array_get($args, 'has_attachment')) {
-            $from   .= ' LEFT JOIN  {attachments} att   ON t.task_id = att.task_id ';
+            $from   .= '
+LEFT JOIN  {attachments} att   ON t.task_id = att.task_id ';
             $select .= ' COUNT(DISTINCT att.attachment_id) AS num_attachments, ';
         }
 
 	# 20150213 currently without recursive subtasks!
 	if (in_array('effort', $visible)) {
-		$from   .= ' LEFT JOIN  {effort} ef   ON t.task_id = ef.task_id ';
+		$from   .= '
+LEFT JOIN  {effort} ef   ON t.task_id = ef.task_id ';
 		$select .= ' SUM( ef.effort) AS effort, ';
 	}
 
-        $from   .= ' LEFT JOIN  {assigned} ass      ON t.task_id = ass.task_id ';
-        $from   .= ' LEFT JOIN  {users} u           ON ass.user_id = u.user_id ';
+        $from   .= '
+LEFT JOIN  {assigned} ass      ON t.task_id = ass.task_id ';
+        $from   .= '
+LEFT JOIN  {users} u           ON ass.user_id = u.user_id ';
         if (array_get($args, 'dev') || in_array('assignedto', $visible)) {
             $select .= ' MIN(u.real_name)               AS assigned_to_name, ';
-            $select .= ' COUNT(DISTINCT ass.user_id)    AS num_assigned, ';
+            $select .= ' (SELECT COUNT(assc.user_id) FROM {assigned} assc WHERE assc.task_id = t.task_id)  AS num_assigned, ';
+            $groupby .= 'ass.task_id, ';
         }
 
         if (array_get($args, 'only_primary')) {
-            $from   .= ' LEFT JOIN  {dependencies} dep  ON dep.dep_task_id = t.task_id ';
+            $from   .= '
+LEFT JOIN  {dependencies} dep  ON dep.dep_task_id = t.task_id ';
             $where[] = 'dep.depend_id IS NULL';
         }
         if (array_get($args, 'has_attachment')) {
@@ -1386,20 +1400,18 @@ abstract class Backend
         $order_keys = array_intersect_key($order_keys, array_merge(array_flip($visible), array('severity' => 'task_severity')));
 
     	// Implementing setting "Default order by"
-    	if (!array_key_exists('order', $args)) {
+		if (!array_key_exists('order', $args)) {
 			if ($proj->id) {
 				$orderBy = $proj->prefs['default_order_by'];
 				$sort = $proj->prefs['default_order_by_dir'];
+			} else {
+				$orderBy = $fs->prefs['default_order_by'];
+				$sort = $fs->prefs['default_order_by_dir'];
 			}
-    		else {
-    			$orderBy = $fs->prefs['default_order_by'];
-    			$sort = $fs->prefs['default_order_by_dir'];
-    		}
-    	}
-    	else {
-    		$orderBy = $args['order'];
-    		$sort = $args['sort'];
-    	}
+		} else {
+			$orderBy = $args['order'];
+			$sort = $args['sort'];
+		}
 
         $order_column[0] = $order_keys[Filters::enum(array_get($args, 'order', $orderBy), array_keys($order_keys))];
         $order_column[1] = $order_keys[Filters::enum(array_get($args, 'order2', 'severity'), array_keys($order_keys))];
@@ -1525,12 +1537,16 @@ abstract class Backend
             $where[]      = 'fsn.user_id = ?';
             $sql_params[] = $user->id;
         }
+        
+        if ($user->isAnon()) {
+            $where[] = 'p.others_view = 1';
+        }
 
         $where = (count($where)) ? 'WHERE '. join(' AND ', $where) : '';
 
         // Get the column names of table tasks for the group by statement
         if (!strcasecmp($conf['database']['dbtype'], 'pgsql')) {
-             $groupby .= "p.project_title, p.project_is_active, lst.status_name, lt.tasktype_name,{$order_column[0]},{$order_column[1]}, lr.resolution_name, ";
+             $groupby .= "p.project_title, p.project_is_active, lst.status_name, lt.tasktype_name, lr.resolution_name, ";
              $groupby .= $db->GetColumnNames('{tasks}', 't.task_id', 't.');
         } else {
             $groupby = 't.task_id';
@@ -1538,37 +1554,124 @@ abstract class Backend
 
         $having = (count($having)) ? 'HAVING '. join(' AND ', $having) : '';
 
+        // Current implementation
         # 20150313 peterdd: Do not override task_type with tasktype_name until we changed t.task_type to t.task_type_id! We need the id too.
-        $sql = $db->Query("
-                          SELECT   t.*, $select
-                                   p.project_title, p.project_is_active,
-                                   lst.status_name,
-                                   lt.tasktype_name,
-                                   lr.resolution_name
+        $sqltext = "
+SELECT t.*, $select
+p.project_title, p.project_is_active,
+lst.status_name,
+lt.tasktype_name,
+lr.resolution_name
+FROM $from
+$where
+GROUP BY $groupby
+$having
+ORDER BY $sortorder";
+
+	$sql = $db->Query("SELECT COUNT(*) FROM ($sqltext) c", $sql_params);
+	$totalcount = $db->FetchOne($sql);
+
+	$sql = $db->Query($sqltext, $sql_params);
+	
+	# we cannot just fetchall on huge task lists into array/memory.
+	#$tasks = $db->fetchAllArray($sql);
+	$tasks = array();
+	$id_list = array();
+	$task_count = 0;
+	$totalcount=0;
+	$forbidden_tasks_count=0;
+	while ($task = $sql->FetchRow()) {
+		if ($user->can_view_task($task)){
+			if ( $task_count >= $offset && $task_count < ($offset + $perpage) ) {
+				$id_list[] = $task['task_id'];
+				$tasks[]=$task;
+			}
+            $task_count++;
+			$totalcount++;
+		} else{
+			$forbidden_tasks_count++;
+		}
+	}
+	return array($tasks, $id_list, $totalcount, $forbidden_tasks_count);
+    // # end current
+/*        
+// Alternative implementation for testing and discussion
+// In my tests, the query used was:        
+// SELECT t.*,  lc.category_name               AS category_name,  COUNT(DISTINCT vot.vote_id)    AS num_votes,  (SELECT COUNT(cc.comment_id) FROM flyspray_comments cc WHERE cc.task_id = t.task_id)  AS num_comments,  uo.real_name                   AS opened_by_name,  COUNT(DISTINCT att.attachment_id) AS num_attachments, 
+// p.project_title, p.project_is_active,
+// lst.status_name,
+// lt.tasktype_name,
+// lr.resolution_name
+// FROM  flyspray_tasks t
+// LEFT JOIN  flyspray_projects      p   ON t.project_id = p.project_id
+// LEFT JOIN  flyspray_list_tasktype lt  ON t.task_type = lt.tasktype_id
+// LEFT JOIN  flyspray_list_status   lst ON t.item_status = lst.status_id
+// LEFT JOIN  flyspray_list_resolution lr ON t.resolution_reason = lr.resolution_id 
+// LEFT JOIN  flyspray_list_category lc  ON t.product_category = lc.category_id 
+// LEFT JOIN  flyspray_votes vot         ON t.task_id = vot.task_id 
+// LEFT JOIN  flyspray_users uo          ON t.opened_by = uo.user_id 
+// LEFT JOIN  flyspray_attachments att   ON t.task_id = att.task_id 
+// LEFT JOIN  flyspray_assigned ass      ON t.task_id = ass.task_id 
+// LEFT JOIN  flyspray_users u           ON ass.user_id = u.user_id 
+// WHERE ( is_closed = 0 )
+//
+// And for Postgresql, group by:
+// GROUP BY t.task_id, lc.category_name, uo.real_name, p.project_title, p.project_is_active, lst.status_name, lt.tasktype_name, lr.resolution_name, t.task_id, t.project_id, t.task_type, t.date_opened, t.opened_by, t.is_closed, t.date_closed, t.closed_by, t.closure_comment, t.item_summary, t.detailed_desc, t.item_status, t.resolution_reason, t.product_category, t.product_version, t.closedby_version, t.operating_system, t.task_severity, t.task_priority, t.last_edited_by, t.last_edited_time, t.percent_complete, t.mark_private, t.due_date, t.anon_email, t.task_token, t.supertask_id, t.list_order, t.estimated_effort
+// For Mysql group by is always:
+// GROUP BY t.task_id
+// 
+// And order by is:
+// ORDER BY t.task_id desc, task_severity desc
+
+// In my testing, showing all projects and having total 152299 tasks, 213884 comments,
+// no votes or attachments yet, this version runs between 6500 and 7500 ms.
+// Current version between 13500 and 15500 ms.
+        $sqlcount = "SELECT  COUNT(*) FROM (SELECT 1
                           FROM     $from
                           $where
                           GROUP BY $groupby
-                          $having
-                          ORDER BY $sortorder", $sql_params);
+                          $having) s";
+// Using limit 100. Running time depends heavily on offset.
+// With 0: between 5400 and 6000 ms.
+// With 152200: between 14000 and 17000 ms. Varies a lot, strange.
+// Current version not using limit and offset between 60000 and 61000 ms.        
+        $sqltext = "SELECT t.*, $select
+p.project_title, p.project_is_active,
+lst.status_name,
+lt.tasktype_name,
+lr.resolution_name
+FROM $from
+$where
+GROUP BY $groupby
+$having
+ORDER BY $sortorder";
 
+// Now, do we have a clear winner at least for Postgresql? What kind of running
+// times do you get using Mysql and different storage engines?
+
+        // echo '<pre>'.$sqlcount.'</pre>'; # for debugging 
+        // echo '<pre>'.$sqltext.'</pre>'; # for debugging 
+        $sql = $db->Query($sqlcount, $sql_params);
+        $totalcount = $db->FetchOne($sql);
+
+        # 20150313 peterdd: Do not override task_type with tasktype_name until we changed t.task_type to t.task_type_id! We need the id too.
+
+        $sql = $db->Query($sqltext, $sql_params, $perpage, $offset);
         $tasks = $db->fetchAllArray($sql);
         $id_list = array();
         $limit = array_get($args, 'limit', -1);
-        $task_count = 0;
+        $forbidden_tasks_count = 0;
         foreach ($tasks as $key => $task) {
             $id_list[] = $task['task_id'];
             if (!$user->can_view_task($task)) {
                 unset($tasks[$key]);
-                array_pop($id_list);
-                --$task_count;
-            } elseif (!is_null($perpage) && ($task_count < $offset || ($task_count > $offset - 1 + $perpage) || ($limit > 0 && $task_count >= $limit))) {
-                unset($tasks[$key]);
+                $forbidden_tasks_count++;
             }
-
-            ++$task_count;
         }
 
-        return array($tasks, $id_list);
-    }
-
-}
+        // Work on this is not finished until $forbidden_tasks_count is always zero.
+        // echo "<pre>$offset : $perpage : $totalcount : $forbidden_tasks_count</pre>";
+        return array($tasks, $id_list, $totalcount, $forbidden_tasks_count);
+*/ # end alternative
+} # end get_task_list
+} # end class

@@ -1017,7 +1017,8 @@ Regards,',
 'myassignedtasks'         => 'My assigned tasks',
 'nonotifications'         => 'There are no notifications.',
 'forgetnotifications'     => 'Forget selected notifications',
-'notifyonline'            => 'Online notifications'
-
+'notifyonline'            => 'Online notifications',
+'commentedon'             => 'commented on',
+'maxvoteperday'           => 'Maximum votes per day'
 );
 ?>
