@@ -105,11 +105,11 @@ class Jabber
      * OpenSocket
      * @param string $server host to connect to
      * @param int $port port number
-     * @param int $security what kind on encryption to use
+     * @param bool $ssl use ssl or not
      * @access public
      * @return bool
      */
-    public function open_socket($server, $port, $security = SECURITY_NONE)
+    public function open_socket($server, $port, $ssl = false)
     {
         if (function_exists("dns_get_record")) {
             $record = dns_get_record("_xmpp-client._tcp.$server", DNS_SRV);
@@ -120,13 +120,10 @@ class Jabber
             $this->log('Warning: dns_get_record function not found. gtalk will not work.');
         }
 
-        if ($security == SECURITY_SSL) {
-            $server = 'ssl://' . $server;
+        $server = $ssl ? 'ssl://' . $server : $server;
+
+        if ($ssl) {
             $this->session['ssl'] = true;
-        }
-        if ($security == SECURITY_TSL) {
-            $server = 'tls://' . $server;
-            $this->session['tls'] = true;
         }
 
         if ($this->connection = @fsockopen($server, $port, $errorno, $errorstr, $this->timeout)) {
@@ -333,12 +330,9 @@ class Jabber
                 }
                 // Let's use TLS if SSL is not enabled and we can actually use it
                 if ($this->session['security'] == SECURITY_TLS && isset($xml['stream:features'][0]['#']['starttls'])) {
-                    // Check that it was not started already when creating the connection
-                    if (!isset($this->session['tls'])) {
-                        $this->log('Switching to TLS.');
-                        $this->send("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\n");
-                        return $this->response($this->listen());
-                    }
+                    $this->log('Switching to TLS.');
+                    $this->send("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>\n");
+                    return $this->response($this->listen());
                 }
                 // Does the server support SASL authentication?
 
