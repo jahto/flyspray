@@ -77,7 +77,7 @@
   <input type='submit' name='export_list' value='<?php echo Filters::noXSS(L('exporttasklist')); ?>'/>
 <style>
 #sc2,#s_searchstate{display:none;}
-#searchstateactions{color:#999;display:block;}
+#searchstateactions{color:#999;display:block;cursor:pointer;}
 #s_searchstate:checked ~ #sc2 {display:block;}
 </style>
 <input id="s_searchstate" type="checkbox" name="advancedsearch"<?php if(Req::val('advancedsearch')): ?> checked="checked"<?php endif; ?>/>
@@ -328,7 +328,7 @@
     </tr>
 </table>
 
-<!--- Bulk editing Tasks --->
+<!-- Bulk editing Tasks -->
 <?php if (!$proj->id == 0): ?>
 <?php if (!$user->isAnon() && $total): ?>
 <!-- Grab fields wanted for this project so we only show those specified in the settings -->
@@ -516,9 +516,9 @@
             <!-- If there is only one choice of project, then don't bother showing it -->
             <?php if (count($fs->projects) > 1) { ?>
             <li>
-                <?php } else { ?>
+            <?php } else { ?>
             <li style="display:none">
-                <?php } ?>
+            <?php } ?>
                 <?php $projectsList = $fs->listProjects(); ?>
                 <?php array_unshift($projectsList,L('notspecified')); ?>
                 <label for="bulk_projects"><?php echo Filters::noXSS(L('attachedtoproject')); ?></label>
@@ -526,8 +526,6 @@
                     <?php echo tpl_options($projectsList); ?>
                 </select>
             </li>
-            </li>
-
         </ul>
         <button type="submit" name="updateselectedtasks" value="true"><?php echo Filters::noXSS(L('updateselectedtasks')); ?></button>
     </fieldset>

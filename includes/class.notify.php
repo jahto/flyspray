@@ -64,7 +64,7 @@ class Notifications {
                 }
             }
         }
-
+	
         if (isset($to[2])) {
             foreach ($to[2] as $recipient) {
                 // echo "<pre>".var_dump($recipient)."</pre>";
@@ -103,11 +103,13 @@ class Notifications {
             // Get rid of undefined offset 2 when notify type is explicitly set,
             // in these cases caller really has not set offset 2. Track down the
             // callers later.
+	    /*
             if (isset($onlines[$lang]) && ($ntype != NOTIFY_EMAIL && $ntype != NOTIFY_JABBER)) {
                 if (!$this->StoreOnline($onlines[$lang], $msg[2], $msg[3], $task_id)) {
                     $result = false;
                 }
             }
+	    */
         }
         return $result;
 
