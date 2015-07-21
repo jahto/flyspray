@@ -8,7 +8,7 @@
     <field name="user_name" type="C" size="32">
       <NOTNULL/>
     </field>
-    <field name="user_pass" type="C" size="40"/>
+    <field name="user_pass" type="C" size="60"/>
     <field name="real_name" type="C" size="100">
       <NOTNULL/>
     </field>
@@ -717,4 +717,7 @@
       <col>version_tense</col>
     </index>
   </table>
+  <sql>
+    <query>UPDATE projects SET visible_fields = 'tasktype category severity priority status private assignedto reportedin dueversion duedate progress os votes' WHERE visible_fields = '';</query>
+  </sql>
 </schema>

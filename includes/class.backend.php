@@ -1277,8 +1277,8 @@ abstract class Backend
         $from = ' {tasks} t
 -- All tasks have a project!
 JOIN {projects} p ON t.project_id = p.project_id
--- Global group always exists
-JOIN ({groups} gpg
+-- Global group always exists (actually not for anonymous users...)
+LEFT JOIN ({groups} gpg
     JOIN {users_in_groups} gpuig ON gpg.group_id = gpuig.group_id AND gpuig.user_id = ?		
 ) ON gpg.project_id = 0
 -- Project group might exist or not.
@@ -1406,6 +1406,7 @@ LEFT JOIN {users} u ON ass.user_id = u.user_id ';
                 $cfrom .= '
 -- LEFT JOIN {assigned} ass ON t.task_id = ass.task_id
 LEFT JOIN {users} u ON ass.user_id = u.user_id ';
+		$cgroupbyarr[] = 't.task_id';
                 $cgroupbyarr[] = 'ass.task_id';
             }
         }
@@ -1659,7 +1660,7 @@ LEFT JOIN {users} u ON ass.user_id = u.user_id ';
         
         // echo '<pre>' . print_r($args, true) . '</pre>';
         // echo '<pre>' . print_r($cgroupbyarr, true) . '</pre>';
-        $cgroupby = count($cgroupbyarr) ? 'GROUP BY ' . implode(',', $cgroupbyarr) : '';
+        $cgroupby = count($cgroupbyarr) ? 'GROUP BY ' . implode(',', array_unique($cgroupbyarr)) : '';
 
         $sqlcount = "SELECT  COUNT(*) FROM (SELECT 1, t.task_id, t.date_opened, t.date_closed, t.last_edited_time
                            FROM     $cfrom
